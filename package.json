@@ -1,0 +1,21 @@
+{
+  "name": "LD42",
+  "version": "1.0.0",
+  "description": "Ludum dare 42 entry",
+  "main": "src/index.js",
+  "repository": "https://github.com/kentaromiura/LD42.git",
+  "author": "Cristian Carlesso <kentaromiura@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "package": "node build",
+    "start": "yarn parcel -p 1337 watch index.html"
+  },
+  "devDependencies": {
+    "ncp": "^2.0.0",
+    "parcel-bundler": "^1.9.7",
+    "prettier": "^1.14.2"
+  },
+  "dependencies": {
+    "pixi.js": "^4.8.1"
+  }
+}
