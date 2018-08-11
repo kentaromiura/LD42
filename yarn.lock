@@ -13,6 +13,10 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.0.tgz#50c1e2260ac0ed9439a181de3725a0168d59c48a"
 
+"@types/webrtc@0.0.21":
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/@types/webrtc/-/webrtc-0.0.21.tgz#bc3cfb7e22add284761e5d63efad664b0eba8b86"
+
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -1575,6 +1579,10 @@ etag@~1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
 
+eventemitter3@^0.1.5:
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-0.1.6.tgz#8c7ac44b87baab55cd50c828dc38778eac052ea5"
+
 eventemitter3@^2.0.0:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-2.0.3.tgz#b5e1079b59fb5e1ba2771c0a993be060a58c99ba"
@@ -2179,6 +2187,10 @@ js-beautify@^1.7.5:
     editorconfig "^0.13.2"
     mkdirp "~0.5.0"
     nopt "~3.0.1"
+
+js-binarypack@0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/js-binarypack/-/js-binarypack-0.0.9.tgz#454243d3de212961cc1514a2f119dec2faf64035"
 
 "js-tokens@^3.0.0 || ^4.0.0":
   version "4.0.0"
@@ -2823,6 +2835,15 @@ pbkdf2@^3.0.3:
     ripemd160 "^2.0.1"
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
+
+peerjs@^0.3.16:
+  version "0.3.16"
+  resolved "https://registry.yarnpkg.com/peerjs/-/peerjs-0.3.16.tgz#d6ece15f2f4c923a7ad34dd935ec75cb81990a56"
+  dependencies:
+    "@types/webrtc" "0.0.21"
+    eventemitter3 "^0.1.5"
+    js-binarypack "0.0.9"
+    reliable "git+https://github.com/michelle/reliable.git"
 
 physical-cpu-count@^2.0.0:
   version "2.0.0"
@@ -3506,6 +3527,12 @@ regjsparser@^0.1.4:
   resolved "https://registry.yarnpkg.com/regjsparser/-/regjsparser-0.1.5.tgz#7ee8f84dc6fa792d3fd0ae228d24bd949ead205c"
   dependencies:
     jsesc "~0.5.0"
+
+"reliable@git+https://github.com/michelle/reliable.git":
+  version "0.1.0"
+  resolved "git+https://github.com/michelle/reliable.git#f09ba29d57a05beaa07990171f3fe7b746587aaa"
+  dependencies:
+    js-binarypack "0.0.9"
 
 remove-array-items@^1.0.0:
   version "1.0.0"

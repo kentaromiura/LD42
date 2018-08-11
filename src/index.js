@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import Game from "./game";
 import {Howl, Howler} from 'howler';
+import connect from "./p2p";
 
 const sound = new Howl({src: ['assets/Orbital_Colossus.mp3']})
 // The application will create a renderer using WebGL, if possible,
@@ -65,3 +66,16 @@ onload = function() {
     });
   });
 };
+
+// TODO: plz use for communication to each other.
+connect().then(client => {
+
+  // register callback to receive data from other.
+  client.cb((data, from) => {
+    console.log(data, from);
+  });
+
+  // send message to other player.
+  client.emit({ foo: 'bar' });
+
+});

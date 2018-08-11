@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "howler": "^2.0.14",
+    "peerjs": "^0.3.16",
     "pixi.js": "^4.8.1"
   }
 }
