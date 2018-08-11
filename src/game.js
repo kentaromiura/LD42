@@ -5,13 +5,34 @@ import Projectile from "./projectile";
 const sound = new Howl({ src: ["assets/Orbital_Colossus.mp3"] });
 
 let projectiles = [];
+const vector = (x, y) => new PIXI.Point(x, y);
 
 export default class Game {
   constructor(app, state, onReady = () => {}) {
     this.app = app;
     const messages = {
+      createExplosion(x, y) {
+        const animatedsprite = state.explosion();
+        animatedsprite.animationSpeed = 1 / 5;
+        animatedsprite.loop = false;
+        animatedsprite.anchor.x = 0.5;
+        animatedsprite.anchor.y = 0.5;
+        animatedsprite.position = vector(x, y);
+        animatedsprite.width = 64;
+        animatedsprite.height = 64;
+        animatedsprite.onComplete = () => animatedsprite.destroy();
+        app.stage.addChild(animatedsprite);
+        animatedsprite.play();
+      },
       createProjectile(x, y) {
-        const p = new Projectile(state.currentProjectile(), x, y, 32, 32);
+        const p = new Projectile(
+          state.currentProjectile(),
+          x,
+          y,
+          32,
+          32,
+          messages
+        );
 
         app.stage.addChild(p.sprite);
         projectiles.push(p);
@@ -24,12 +45,30 @@ export default class Game {
         .add("fuji", "assets/fuji.jpeg")
         .add("player", "assets/airplane1.png")
         .add("projectile", "assets/test.json")
+        .add("explosion", "assets/explosion.json")
         .load((loader, resources) => {
           state.currentProjectile = () =>
             new PIXI.extras.AnimatedSprite([
               PIXI.Sprite.fromFrame("shot2-dot-blue.png").texture,
               PIXI.Sprite.fromFrame("shot2-dot.png").texture
             ]);
+
+          state.explosion = () => {
+            // TODO: memoize animation
+            return new PIXI.extras.AnimatedSprite(
+              [
+                "explosion1.png",
+                "explosion2.png",
+                "explosion3.png",
+                "explosion4.png",
+                "explosion5.png",
+                "explosion6.png",
+                "explosion7.png",
+                "explosion8.png"
+              ].map(file => PIXI.Sprite.fromFrame(file).texture)
+            );
+          };
+
           const centerX = app.renderer.width / 2;
           const centerY = app.renderer.height / 2;
           const player = new Player(
