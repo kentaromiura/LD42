@@ -34,6 +34,9 @@ export default class Player extends GameObject {
           if (startX !== endX || startY !== endY) {
             const x = this.sprite.x;
             const y = this.sprite.y;
+            const orientation = endX - startX;
+            this.sprite.rotation = Math.PI/2 * Math.sin(orientation/100);
+
             this.sprite.position = vector(x, y).add(
               vector(
                 endX - startX,
