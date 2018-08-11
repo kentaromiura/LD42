@@ -6,16 +6,20 @@ PIXI.Point.prototype.add = function(point) {
   return this;
 };
 
+// disable to be able to test with chrome.
+PIXI.accessibility.AccessibilityManager.prototype.createTouchHook = () => {};
+
 import connect from "./p2p";
 
 import Game from "./game";
 // The application will create a renderer using WebGL, if possible,
 // with a fallback to a canvas render. It will also setup the ticker
 // and the root stage PIXI.Container
-const app = new PIXI.Application({autostart: false});
-new Function('return this')().app = app;
+const app = new PIXI.Application(window.innerWidth, window.innerHeight, {
+  autostart: false
+});
+new Function("return this")().app = app;
 onload = function() {
-
   // globals
   const keyStatus = {};
   const state = {};
@@ -33,20 +37,20 @@ onload = function() {
       // Define touch events
       const eventHandlers = {
         touchstart(evt) {
-          const {clientX, clientY} = evt.touches[0];
-          state.lastTouchCoords = {clientX, clientY};
+          const { clientX, clientY } = evt.touches[0];
+          state.lastTouchCoords = { clientX, clientY };
           game.play();
         },
-        touchend(evt){
+        touchend(evt) {
           game.pause();
           state.lastTouchCoords = null;
         },
-        touchmove(evt){
+        touchmove(evt) {
           //console.log(evt);
-          const {clientX, clientY} = evt.touches[0];
-          state.lastTouchMoveCoords = {clientX, clientY};
+          const { clientX, clientY } = evt.touches[0];
+          state.lastTouchMoveCoords = { clientX, clientY };
         }
-      }
+      };
 
       // Adding all touch events here
       for (let evt in eventHandlers) {
@@ -66,22 +70,19 @@ onload = function() {
       };
 
       for (let evt in keyEvents) {
-        document.addEventListener(evt, keyEvents[evt]);
+        // document.addEventListener(evt, keyEvents[evt]);
       }
-
     });
   });
 };
 
 // TODO: plz use for communication to each other.
 connect().then(client => {
-
   // register callback to receive data from other.
   client.cb((data, from) => {
     console.log(data, from);
   });
 
   // send message to other player.
-  client.emit({ foo: 'bar' });
-
+  client.emit({ foo: "bar" });
 });
