@@ -43,7 +43,9 @@ export default class Game {
       // load the texture we need
       PIXI.loader
         .add("fuji", "assets/fuji.jpeg")
-        .add("player", "assets/airplane1.png")
+        .add("player", "assets/airplane5-dot.png")
+        .add("playerTiltLeft", "assets/airplane5-left-dot.png")
+        .add("playerTiltRight", "assets/airplane5-right-dot.png")
         .add("projectile", "assets/test.json")
         .add("explosion", "assets/explosion.json")
         .load((loader, resources) => {
@@ -72,7 +74,11 @@ export default class Game {
           const centerX = app.renderer.width / 2;
           const centerY = app.renderer.height / 2;
           const player = new Player(
-            new PIXI.Sprite(resources.player.texture),
+            new PIXI.extras.AnimatedSprite([
+              resources.player.texture,
+              resources.playerTiltLeft.texture,
+              resources.playerTiltRight.texture
+            ]),
             state,
             messages,
             centerX,

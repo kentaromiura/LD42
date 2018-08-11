@@ -4,7 +4,7 @@ import * as PIXI from "pixi.js";
 const vector = (x, y) => new PIXI.Point(x, y);
 
 export default class Player extends GameObject {
-  constructor(sprite, state, messages, x = 0, y = 0, w = 64, h = 64) {
+  constructor(sprite, state, messages, x = 0, y = 0, w = 128, h = 128) {
     super(x, y, w, h);
     this.nextShotIn = 15;
     this.currentShotSpeed = 15;
@@ -45,6 +45,13 @@ export default class Player extends GameObject {
             const y = this.sprite.y;
             const orientation = endX - startX;
             this.sprite.rotation = (Math.PI / 2) * Math.sin(orientation / 100);
+            if (orientation > 0.5) {
+              this.sprite.gotoAndStop(2);
+            } else if (orientation < 0.5) {
+              this.sprite.gotoAndStop(1);
+            } else {
+              this.sprite.gotoAndStop(0);
+            }
 
             this.sprite.position = vector(x, y).add(
               vector(endX - startX, endY - startY)
