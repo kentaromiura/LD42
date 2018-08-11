@@ -16,6 +16,7 @@
     "prettier": "^1.14.2"
   },
   "dependencies": {
+    "howler": "^2.0.14",
     "pixi.js": "^4.8.1"
   }
 }
