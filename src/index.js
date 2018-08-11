@@ -1,5 +1,8 @@
 import * as PIXI from "pixi.js";
 import Game from "./game";
+import {Howl, Howler} from 'howler';
+
+const sound = new Howl({src: ['assets/Orbital_Colossus.mp3']})
 // The application will create a renderer using WebGL, if possible,
 // with a fallback to a canvas render. It will also setup the ticker
 // and the root stage PIXI.Container
@@ -26,9 +29,11 @@ onload = function() {
           const {screenX, screenY} = evt.touches[0];
           state.lastTouchCoords = {screenX, screenY};
           game.play();
+          sound.play();
         },
         touchend(evt){
           game.pause();
+          sound.pause();
         },
         touchmove(evt){
           const {screenX, screenY} = evt.touches[0];
