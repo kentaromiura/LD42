@@ -14,8 +14,7 @@ export default () =>
     peer.on('open', (id) => {
       console.log('My peer ID is: ' + id);
 
-      // TODO: change host to public server.
-      fetch(`http://localhost:3030/join?id=${id}`)
+      fetch(`https://gamebroker.herokuapp.com/ld42/join?id=${id}`)
         .then(res => res.json())
         .then((res) => {
           if (res.clients) {
