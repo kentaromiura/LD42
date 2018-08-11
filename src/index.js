@@ -18,7 +18,10 @@ import Game from "./game";
 const app = new PIXI.Application(window.innerWidth, window.innerHeight, {
   autostart: false
 });
+
+// storing app as a global only for test purpose.
 new Function("return this")().app = app;
+
 onload = function() {
   // globals
   const keyStatus = {};
