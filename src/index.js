@@ -1,18 +1,23 @@
 import * as PIXI from "pixi.js";
-import Game from "./game";
-import {Howl, Howler} from 'howler';
 
-const sound = new Howl({src: ['assets/Orbital_Colossus.mp3']})
+// Add some utils...
+PIXI.Point.prototype.add = function(point) {
+  this.set(this.x + point.x, this.y + point.y);
+  return this;
+};
+
+import Game from "./game";
 // The application will create a renderer using WebGL, if possible,
 // with a fallback to a canvas render. It will also setup the ticker
 // and the root stage PIXI.Container
 const app = new PIXI.Application({autostart: false});
 
-// globals
-const keyStatus = {};
-const state = {};
-
 onload = function() {
+
+  // globals
+  const keyStatus = {};
+  const state = {};
+
   // get global target canvas
   const target = document.getElementById("target");
   target.appendChild(app.view);
@@ -26,18 +31,18 @@ onload = function() {
       // Define touch events
       const eventHandlers = {
         touchstart(evt) {
-          const {screenX, screenY} = evt.touches[0];
-          state.lastTouchCoords = {screenX, screenY};
+          const {clientX, clientY} = evt.touches[0];
+          state.lastTouchCoords = {clientX, clientY};
           game.play();
-          sound.play();
         },
         touchend(evt){
           game.pause();
-          sound.pause();
+          state.lastTouchCoords = null;
         },
         touchmove(evt){
-          const {screenX, screenY} = evt.touches[0];
-          state.lastTouchMoveCoords = {screenX, screenY};
+          console.log(evt);
+          const {clientX, clientY} = evt.touches[0];
+          state.lastTouchMoveCoords = {clientX, clientY};
         }
       }
 
