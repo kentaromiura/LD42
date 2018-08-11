@@ -12,8 +12,15 @@ export default class Game {
       PIXI.loader
         .add("fuji", "assets/fuji.jpeg")
         .add("player", "assets/airplane1.png")
+        .add("projectile", "assets/test.json")
         .load((loader, resources) => {
 
+        state.currentProjectile = () => new PIXI.extras.AnimatedSprite(
+          [
+            PIXI.Sprite.fromFrame("shot2-dot-blue.png").texture,
+            PIXI.Sprite.fromFrame("shot2-dot.png").texture
+          ]
+        );
         const centerX = app.renderer.width / 2;
         const centerY = app.renderer.height / 2;
         const player = new Player(

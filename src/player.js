@@ -1,12 +1,16 @@
 import GameObject from "./gameObject"
 import * as PIXI from "pixi.js";
+import Projectile from "./projectile";
 
 const vector = (x, y) => new PIXI.Point(x, y);
 
+let projectiles = [];
 export default class Player extends GameObject {
 
   constructor(sprite, state, x = 0, y = 0 , w = 64, h = 64) {
     super(x, y, w, h);
+    this.nextShotIn = 15;
+    this.currentShotSpeed = 15;
     this.state = state;
     this.sprite = sprite;
     sprite.anchor.x = 0.5;
@@ -17,6 +21,23 @@ export default class Player extends GameObject {
   }
 
   updatePosition() {
+    if (this.nextShotIn < 0) {
+      this.nextShotIn = this.currentShotSpeed;
+      const p = new Projectile(
+        this.state.currentProjectile(),
+        this.sprite.x,
+        this.sprite.y - 34,
+        32,
+        32
+      );
+      new Function('return this')().app.stage.addChild(p.sprite);
+      projectiles.push(p);
+      //p.sprite.gotoAndPlay();
+    } else {
+      this.nextShotIn--;
+    }
+    projectiles.forEach(p => p.updatePosition())
+    projectiles = projectiles.filter(p => !p.disabled)
     const state = this.state;
     if (state.lastTouchCoords) {
       const startX = state.lastTouchCoords.clientX;

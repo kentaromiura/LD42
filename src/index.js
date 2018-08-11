@@ -13,7 +13,7 @@ import Game from "./game";
 // with a fallback to a canvas render. It will also setup the ticker
 // and the root stage PIXI.Container
 const app = new PIXI.Application({autostart: false});
-
+new Function('return this')().app = app;
 onload = function() {
 
   // globals
@@ -42,7 +42,7 @@ onload = function() {
           state.lastTouchCoords = null;
         },
         touchmove(evt){
-          console.log(evt);
+          //console.log(evt);
           const {clientX, clientY} = evt.touches[0];
           state.lastTouchMoveCoords = {clientX, clientY};
         }
