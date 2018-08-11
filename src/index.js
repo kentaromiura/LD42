@@ -6,6 +6,8 @@ PIXI.Point.prototype.add = function(point) {
   return this;
 };
 
+import connect from "./p2p";
+
 import Game from "./game";
 // The application will create a renderer using WebGL, if possible,
 // with a fallback to a canvas render. It will also setup the ticker
@@ -70,3 +72,16 @@ onload = function() {
     });
   });
 };
+
+// TODO: plz use for communication to each other.
+connect().then(client => {
+
+  // register callback to receive data from other.
+  client.cb((data, from) => {
+    console.log(data, from);
+  });
+
+  // send message to other player.
+  client.emit({ foo: 'bar' });
+
+});
