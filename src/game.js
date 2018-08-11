@@ -1,6 +1,6 @@
 export default class Game {
 
-  constructor(app, onReady = () => {}) {
+  constructor(app, state, onReady = () => {}) {
     this.app = app;
     const initialize = () => {
       // load the texture we need
@@ -21,11 +21,28 @@ export default class Game {
 
         // Listen for frame updates
         app.ticker.add(() => {
-          // each frame we spin the fuji around a bit
-          fuji.rotation += 0.01;
+          if (state.lastTouchCoords) {
+            const startX = state.lastTouchCoords.screenX;
+            const startY = state.lastTouchCoords.screenY;
+            if (state.lastTouchMoveCoords) {
+              const endX = state.lastTouchMoveCoords.screenX;
+              const endY = state.lastTouchMoveCoords.screenY;
+              state.lastTouchCoords = {
+                screenX: state.lastTouchMoveCoords.screenX,
+                screenY: state.lastTouchMoveCoords.screenY
+              };
+
+              if (endX && endY) {
+                if (startX > endX) {
+                  fuji.rotation += 0.03;
+                } else if (startX !== endX) {
+                  fuji.rotation -= 0.03
+                }
+              }
+            }
+          }
         });
         onReady();
-        //this.pause();
       });
     }
     initialize();

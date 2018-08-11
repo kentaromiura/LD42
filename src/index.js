@@ -5,15 +5,16 @@ import Game from "./game";
 // and the root stage PIXI.Container
 const app = new PIXI.Application({autostart: false});
 
-// global to keep track of keydown.
+// globals
 const keyStatus = {};
+const state = {};
 
 onload = function() {
   // get global target canvas
   const target = document.getElementById("target");
   target.appendChild(app.view);
 
-  const game = new Game(app, () => {
+  const game = new Game(app, state, () => {
     // this is only to always show the first frame.
     game.play();
     requestAnimationFrame(() => {
@@ -22,10 +23,16 @@ onload = function() {
       // Define touch events
       const eventHandlers = {
         touchstart(evt) {
+          const {screenX, screenY} = evt.touches[0];
+          state.lastTouchCoords = {screenX, screenY};
           game.play();
         },
         touchend(evt){
           game.pause();
+        },
+        touchmove(evt){
+          const {screenX, screenY} = evt.touches[0];
+          state.lastTouchMoveCoords = {screenX, screenY};
         }
       }
 
