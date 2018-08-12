@@ -82,9 +82,24 @@ onload = function() {
 // TODO: plz use for communication to each other.
 connect().then(client => {
   // register callback to receive data from other.
-  client.cb((data, from) => {
+  client.on('message', (data, from) => {
     console.log(data, from);
   });
+  client.on('disconnected', (id) => {
+    console.log(id);
+  });
+  client.on('new-attendee', (id) => {
+    console.log(id);
+  });
+  client.on('leave-attendee', (id) => {
+    console.log(id);
+  });
+
+  // Send message to specific user
+  client.to('xxxxxx', { gameis: 'fun'})
+
+  // Get number of connections
+  client.size();
 
   // send message to other player.
   client.emit({ foo: "bar" });
