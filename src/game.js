@@ -3,6 +3,7 @@ import Player from "./player";
 import Projectile from "./projectile";
 import Event from "./event";
 import EVENTS from "./events";
+import Score from "./score";
 
 const sound = new Howl({ src: ["assets/Orbital_Colossus.mp3"] });
 
@@ -11,9 +12,13 @@ const vector = (x, y) => new PIXI.Point(x, y);
 
 export default class Game {
   constructor(app, state, onReady = () => {}) {
+    const score = new Score();
+
     this.app = app;
     this.assetManager = {};
-
+    Event.on(EVENTS.ADD_SCORE, ({ point }) => {
+      score.addScore(point);
+    });
     Event.on(EVENTS.EXPLOSION, ({ x, y }) => {
       const animatedsprite = this.assetManager.explosion();
       animatedsprite.animationSpeed = 1 / 5;
@@ -23,7 +28,11 @@ export default class Game {
       animatedsprite.position = vector(x, y);
       animatedsprite.width = 64;
       animatedsprite.height = 64;
-      animatedsprite.onComplete = () => animatedsprite.destroy();
+      animatedsprite.onComplete = () => {
+        animatedsprite.destroy();
+        // TODO: update points in the correct place
+        Event.fire(EVENTS.ADD_SCORE, { point: 15 });
+      };
       app.stage.addChild(animatedsprite);
       animatedsprite.play();
     });
