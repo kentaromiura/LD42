@@ -1,6 +1,8 @@
 import { Howl, Howler } from "howler";
 import Player from "./player";
 import Projectile from "./projectile";
+import Event from "./event";
+import EVENTS from "./events";
 
 const sound = new Howl({ src: ["assets/Orbital_Colossus.mp3"] });
 
@@ -10,34 +12,27 @@ const vector = (x, y) => new PIXI.Point(x, y);
 export default class Game {
   constructor(app, state, onReady = () => {}) {
     this.app = app;
-    const messages = {
-      createExplosion(x, y) {
-        const animatedsprite = state.explosion();
-        animatedsprite.animationSpeed = 1 / 5;
-        animatedsprite.loop = false;
-        animatedsprite.anchor.x = 0.5;
-        animatedsprite.anchor.y = 0.5;
-        animatedsprite.position = vector(x, y);
-        animatedsprite.width = 64;
-        animatedsprite.height = 64;
-        animatedsprite.onComplete = () => animatedsprite.destroy();
-        app.stage.addChild(animatedsprite);
-        animatedsprite.play();
-      },
-      createProjectile(x, y) {
-        const p = new Projectile(
-          state.currentProjectile(),
-          x,
-          y,
-          32,
-          32,
-          messages
-        );
 
-        app.stage.addChild(p.sprite);
-        projectiles.push(p);
-      }
-    };
+    Event.on(EVENTS.EXPLOSION, ({ x, y }) => {
+      const animatedsprite = state.explosion();
+      animatedsprite.animationSpeed = 1 / 5;
+      animatedsprite.loop = false;
+      animatedsprite.anchor.x = 0.5;
+      animatedsprite.anchor.y = 0.5;
+      animatedsprite.position = vector(x, y);
+      animatedsprite.width = 64;
+      animatedsprite.height = 64;
+      animatedsprite.onComplete = () => animatedsprite.destroy();
+      app.stage.addChild(animatedsprite);
+      animatedsprite.play();
+    });
+
+    Event.on(EVENTS.PROJECTILE, ({ x, y }) => {
+      const p = new Projectile(state.currentProjectile(), x, y, 32, 32);
+
+      app.stage.addChild(p.sprite);
+      projectiles.push(p);
+    });
 
     const initialize = () => {
       // load the texture we need
@@ -80,7 +75,6 @@ export default class Game {
               resources.playerTiltRight.texture
             ]),
             state,
-            messages,
             centerX,
             centerY
           );

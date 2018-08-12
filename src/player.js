@@ -1,16 +1,17 @@
 import GameObject from "./gameObject";
 import * as PIXI from "pixi.js";
+import Event from "./event";
+import EVENTS from "./events";
 
 const vector = (x, y) => new PIXI.Point(x, y);
 
 export default class Player extends GameObject {
-  constructor(sprite, state, messages, x = 0, y = 0, w = 128, h = 128) {
+  constructor(sprite, state, x = 0, y = 0, w = 128, h = 128) {
     super(x, y, w, h);
     this.nextShotIn = 15;
     this.currentShotSpeed = 15;
     this.state = state;
     this.sprite = sprite;
-    this.messages = messages;
     sprite.anchor.x = 0.5;
     sprite.anchor.y = 0.5;
     sprite.position = vector(x, y);
@@ -21,7 +22,10 @@ export default class Player extends GameObject {
   updatePosition() {
     if (this.nextShotIn < 0) {
       this.nextShotIn = this.currentShotSpeed;
-      this.messages.createProjectile(this.sprite.x, this.sprite.y - 34);
+      Event.fire(EVENTS.PROJECTILE, {
+        x: this.sprite.x,
+        y: this.sprite.y - 34
+      });
     } else {
       this.nextShotIn--;
     }
