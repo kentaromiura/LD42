@@ -4,6 +4,8 @@ import Projectile from "./projectile";
 import Event from "./event";
 import EVENTS from "./events";
 import Score from "./score";
+import Enemy from "./enemy";
+import AABB from "./collision";
 
 const soundsBank = [];
 
@@ -32,9 +34,11 @@ export default class Game {
 
     this.app = app;
     this.assetManager = {};
+
     Event.on(EVENTS.ADD_SCORE, ({ point }) => {
       score.addScore(point);
     });
+
     Event.on(EVENTS.EXPLOSION, ({ x, y }) => {
       const animatedsprite = this.assetManager.explosion();
       animatedsprite.animationSpeed = 1 / 5;
@@ -91,7 +95,11 @@ export default class Game {
         .add("playerTiltRight", "assets/airplane5-right-dot.png")
         .add("projectile", "assets/test.json")
         .add("explosion", "assets/explosion.json")
+        .add("enemy", "assets/enemy1.png")
         .load((loader, resources) => {
+          this.assetManager.enemy = () =>
+            new PIXI.extras.AnimatedSprite([resources.enemy.texture]);
+
           this.assetManager.currentProjectile = () =>
             new PIXI.extras.AnimatedSprite([
               PIXI.Sprite.fromFrame("shot2-dot-blue.png").texture,
@@ -145,11 +153,27 @@ export default class Game {
           app.stage.addChild(player.sprite);
           // Listen for frame updates
           let isReady = false;
+
+          const enemy = new Enemy(
+            this.assetManager.enemy(),
+            state,
+            playerWidth,
+            playerHeight,
+            playerWidth,
+            playerHeight
+          );
+
+          app.stage.addChild(enemy.sprite);
+
           app.ticker.add(() => {
             if (isReady) {
               player.updatePosition();
               projectiles.forEach(p => p.updatePosition());
               projectiles = projectiles.filter(p => !p.disabled);
+              let check;
+              if ((check = AABB(projectiles, enemy))) {
+                check.destroy();
+              }
               fuji.tilePosition.y -= 2;
             }
           });
