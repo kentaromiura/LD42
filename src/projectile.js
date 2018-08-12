@@ -20,11 +20,18 @@ export default class Projectile extends GameObject {
     animatedsprite.play();
   }
 
+  destroy() {
+    this.disabled = true;
+    Event.fire(EVENTS.EXPLOSION, { x: this.sprite.x, y: this.sprite.y });
+    this.sprite.destroy();
+  }
+
   updatePosition() {
+    if (this.disabled) return;
     this.sprite.y -= 20;
+    this.y = this.sprite.y;
     if (this.sprite.y < 0 - 40) {
       this.disabled = true;
-      Event.fire(EVENTS.EXPLOSION, { x: this.sprite.x, y: 16 });
       this.sprite.destroy();
     }
   }
