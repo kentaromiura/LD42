@@ -10,7 +10,8 @@ let projectiles = [];
 const vector = (x, y) => new PIXI.Point(x, y);
 
 export default class Game {
-  constructor(app, state, onReady = () => {}) {
+  constructor(app, state, onReady = () => {
+  }) {
     this.app = app;
 
     Event.on(EVENTS.EXPLOSION, ({ x, y }) => {
@@ -79,15 +80,12 @@ export default class Game {
             centerY
           );
           // This creates a texture from a 'fuji.png' image
-          const fuji = new PIXI.Sprite(resources.fuji.texture);
-
+          var fuji = new PIXI.extras.TilingSprite(resources.fuji.texture, app.renderer.width, app.renderer.height);
           // Setup the position of the fuji
-          fuji.x = app.renderer.width / 2;
-          fuji.y = app.renderer.height / 2;
-
-          // Rotate around the center
-          fuji.anchor.x = 0.5;
-          fuji.anchor.y = 0.5;
+          fuji.x = 0;
+          fuji.y = 0;
+          fuji.tilePosition.x = 0;
+          fuji.tilePosition.y = 0;
 
           // Add the fuji to the scene we are building
           app.stage.addChild(fuji);
@@ -97,6 +95,7 @@ export default class Game {
             player.updatePosition();
             projectiles.forEach(p => p.updatePosition());
             projectiles = projectiles.filter(p => !p.disabled);
+            fuji.tilePosition.y -= 2;
           });
           onReady();
         });
