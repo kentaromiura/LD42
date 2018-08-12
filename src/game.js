@@ -10,12 +10,12 @@ let projectiles = [];
 const vector = (x, y) => new PIXI.Point(x, y);
 
 export default class Game {
-  constructor(app, state, onReady = () => {
-  }) {
+  constructor(app, state, onReady = () => {}) {
     this.app = app;
+    this.assetManager = {};
 
     Event.on(EVENTS.EXPLOSION, ({ x, y }) => {
-      const animatedsprite = state.explosion();
+      const animatedsprite = this.assetManager.explosion();
       animatedsprite.animationSpeed = 1 / 5;
       animatedsprite.loop = false;
       animatedsprite.anchor.x = 0.5;
@@ -29,7 +29,13 @@ export default class Game {
     });
 
     Event.on(EVENTS.PROJECTILE, ({ x, y }) => {
-      const p = new Projectile(state.currentProjectile(), x, y, 32, 32);
+      const p = new Projectile(
+        this.assetManager.currentProjectile(),
+        x,
+        y,
+        32,
+        32
+      );
 
       app.stage.addChild(p.sprite);
       projectiles.push(p);
@@ -45,13 +51,13 @@ export default class Game {
         .add("projectile", "assets/test.json")
         .add("explosion", "assets/explosion.json")
         .load((loader, resources) => {
-          state.currentProjectile = () =>
+          this.assetManager.currentProjectile = () =>
             new PIXI.extras.AnimatedSprite([
               PIXI.Sprite.fromFrame("shot2-dot-blue.png").texture,
               PIXI.Sprite.fromFrame("shot2-dot.png").texture
             ]);
 
-          state.explosion = () => {
+          this.assetManager.explosion = () => {
             // TODO: memoize animation
             return new PIXI.extras.AnimatedSprite(
               [
@@ -80,7 +86,11 @@ export default class Game {
             centerY
           );
           // This creates a texture from a 'fuji.png' image
-          var fuji = new PIXI.extras.TilingSprite(resources.fuji.texture, app.renderer.width, app.renderer.height);
+          var fuji = new PIXI.extras.TilingSprite(
+            resources.fuji.texture,
+            app.renderer.width,
+            app.renderer.height
+          );
           // Setup the position of the fuji
           fuji.x = 0;
           fuji.y = 0;
