@@ -5,7 +5,23 @@ import Event from "./event";
 import EVENTS from "./events";
 import Score from "./score";
 
-const sound = new Howl({ src: ["assets/Orbital_Colossus.mp3"] });
+const soundsBank = [];
+
+const sound = new Howl({ src: ["assets/Orbital_Colossus.mp3"], volume: 0.1 });
+const projectileSFX = new Howl({ src: ["assets/laser.wav"], volume: 0.15 });
+const explosionSFX = new Howl({ src: ["assets/explosion.wav"], volume: 0.15 });
+
+soundsBank.push(
+  new Promise((ok, ko) => {
+    sound.on("load", () => ok());
+  }),
+  new Promise((ok, ko) => {
+    explosionSFX.on("load", () => ok());
+  }),
+  new Promise((ok, ko) => {
+    projectileSFX.on("load", () => ok());
+  })
+);
 
 let projectiles = [];
 const vector = (x, y) => new PIXI.Point(x, y);
@@ -35,6 +51,7 @@ export default class Game {
       };
       app.stage.addChild(animatedsprite);
       animatedsprite.play();
+      explosionSFX.fade(0.1, 0, 800, explosionSFX.play());
     });
 
     Event.on(EVENTS.PROJECTILE, ({ x, y }) => {
@@ -45,6 +62,8 @@ export default class Game {
         32,
         32
       );
+
+      projectileSFX.fade(0.1, 0, 200, projectileSFX.play());
 
       app.stage.addChild(p.sprite);
       projectiles.push(p);
@@ -125,13 +144,20 @@ export default class Game {
           app.stage.addChild(fuji);
           app.stage.addChild(player.sprite);
           // Listen for frame updates
+          let isReady = false;
           app.ticker.add(() => {
-            player.updatePosition();
-            projectiles.forEach(p => p.updatePosition());
-            projectiles = projectiles.filter(p => !p.disabled);
-            fuji.tilePosition.y -= 2;
+            if (isReady) {
+              player.updatePosition();
+              projectiles.forEach(p => p.updatePosition());
+              projectiles = projectiles.filter(p => !p.disabled);
+              fuji.tilePosition.y -= 2;
+            }
           });
-          onReady();
+
+          Promise.all(soundsBank).then(() => {
+            onReady();
+            isReady = true;
+          });
         });
     };
     initialize();
