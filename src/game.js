@@ -12,6 +12,7 @@ const soundsBank = [];
 const sound = new Howl({ src: ["assets/Orbital_Colossus.mp3"], volume: 0.1 });
 const projectileSFX = new Howl({ src: ["assets/laser.wav"], volume: 0.15 });
 const explosionSFX = new Howl({ src: ["assets/explosion.wav"], volume: 0.15 });
+const enemyHurtSFX = new Howl({ src: ["assets/enemyhurt.wav"], volume: 0.3 });
 
 soundsBank.push(
   new Promise((ok, ko) => {
@@ -22,10 +23,15 @@ soundsBank.push(
   }),
   new Promise((ok, ko) => {
     projectileSFX.on("load", () => ok());
+  }),
+  new Promise((ok, ko) => {
+    enemyHurtSFX.on("load", () => ok());
   })
 );
 
 let projectiles = [];
+let enemies = [];
+
 const vector = (x, y) => new PIXI.Point(x, y);
 
 export default class Game {
@@ -58,6 +64,10 @@ export default class Game {
       explosionSFX.fade(0.1, 0, 800, explosionSFX.play());
     });
 
+    Event.on(EVENTS.ENEMY_DIE, () => {
+      enemyHurtSFX.fade(0.1, 0, 800, enemyHurtSFX.play());
+    });
+
     Event.on(EVENTS.PROJECTILE, ({ x, y }) => {
       const p = new Projectile(
         this.assetManager.currentProjectile(),
@@ -76,6 +86,7 @@ export default class Game {
     const initialize = () => {
       const playerWidth = 128;
       const playerHeight = 128;
+      state.playerDMG = 30;
       state.boundaries = {
         tl: {
           x: playerWidth / 2,
@@ -162,7 +173,7 @@ export default class Game {
             playerWidth,
             playerHeight
           );
-
+          enemies.push(enemy);
           app.stage.addChild(enemy.sprite);
 
           app.ticker.add(() => {
@@ -171,9 +182,14 @@ export default class Game {
               projectiles.forEach(p => p.updatePosition());
               projectiles = projectiles.filter(p => !p.disabled);
               let check;
-              if ((check = AABB(projectiles, enemy))) {
-                check.destroy();
-              }
+              enemies.forEach(enemy => {
+                enemy.updatePosition(); // TODO: implement it...
+                if ((check = AABB(projectiles, enemy))) {
+                  check.destroy();
+                  enemy.hitBy(state.playerDMG);
+                }
+              });
+              enemies = enemies.filter(p => !p.disabled);
               fuji.tilePosition.y -= 2;
             }
           });
