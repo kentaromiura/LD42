@@ -1,5 +1,6 @@
 class GameOver {
   showGameOver() {
+    console.log("GAME IS OVER!!!");
     this.element.classList.remove("hide");
   }
 
