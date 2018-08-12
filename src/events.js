@@ -1,6 +1,6 @@
-const events = ["explosion", "projectile"];
+const EVENTS = {
+  PROJECTILE: "projectile",
+  EXPLOSION: "explosion"
+};
 
-return events.reduce((p, c) => {
-  p[c] = c;
-  return p;
-}, {});
+export default EVENTS;

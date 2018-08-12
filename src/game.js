@@ -2,7 +2,7 @@ import { Howl, Howler } from "howler";
 import Player from "./player";
 import Projectile from "./projectile";
 import Event from "./event";
-import Events from "./events";
+import EVENTS from "./events";
 
 const sound = new Howl({ src: ["assets/Orbital_Colossus.mp3"] });
 
@@ -13,7 +13,7 @@ export default class Game {
   constructor(app, state, onReady = () => {}) {
     this.app = app;
 
-    Event.on(Events.explosion, ({ x, y }) => {
+    Event.on(EVENTS.EXPLOSION, ({ x, y }) => {
       const animatedsprite = state.explosion();
       animatedsprite.animationSpeed = 1 / 5;
       animatedsprite.loop = false;
@@ -27,14 +27,12 @@ export default class Game {
       animatedsprite.play();
     });
 
-    const messages = {
-      createProjectile(x, y) {
-        const p = new Projectile(state.currentProjectile(), x, y, 32, 32);
+    Event.on(EVENTS.PROJECTILE, ({ x, y }) => {
+      const p = new Projectile(state.currentProjectile(), x, y, 32, 32);
 
-        app.stage.addChild(p.sprite);
-        projectiles.push(p);
-      }
-    };
+      app.stage.addChild(p.sprite);
+      projectiles.push(p);
+    });
 
     const initialize = () => {
       // load the texture we need
@@ -77,7 +75,6 @@ export default class Game {
               resources.playerTiltRight.texture
             ]),
             state,
-            messages,
             centerX,
             centerY
           );

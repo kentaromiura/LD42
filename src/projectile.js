@@ -1,7 +1,7 @@
 import GameObject from "./gameObject";
 import * as PIXI from "pixi.js";
 import Event from "./event";
-import Events from "./events";
+import EVENTS from "./events";
 
 const vector = (x, y) => new PIXI.Point(x, y);
 
@@ -24,7 +24,7 @@ export default class Projectile extends GameObject {
     this.sprite.y -= 20;
     if (this.sprite.y < 0 - 40) {
       this.disabled = true;
-      Event.fire(Events.exlosion, { x: this.sprite.x, y: 16 });
+      Event.fire(EVENTS.EXPLOSION, { x: this.sprite.x, y: 16 });
       this.sprite.destroy();
     }
   }
