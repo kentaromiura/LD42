@@ -58462,7 +58462,38 @@ Negotiator._addProvider = function(provider) {
           }
         }
 
-        var sound = new _howler.Howl({ src: ["assets/Orbital_Colossus.mp3"] });
+        var soundsBank = [];
+
+        var sound = new _howler.Howl({
+          src: ["assets/Orbital_Colossus.mp3"],
+          volume: 0.1
+        });
+        var projectileSFX = new _howler.Howl({
+          src: ["assets/laser.wav"],
+          volume: 0.15
+        });
+        var explosionSFX = new _howler.Howl({
+          src: ["assets/explosion.wav"],
+          volume: 0.15
+        });
+
+        soundsBank.push(
+          new Promise(function(ok, ko) {
+            sound.on("load", function() {
+              return ok();
+            });
+          }),
+          new Promise(function(ok, ko) {
+            explosionSFX.on("load", function() {
+              return ok();
+            });
+          }),
+          new Promise(function(ok, ko) {
+            projectileSFX.on("load", function() {
+              return ok();
+            });
+          })
+        );
 
         var projectiles = [];
         var vector = function vector(x, y) {
@@ -58508,6 +58539,7 @@ Negotiator._addProvider = function(provider) {
               };
               app.stage.addChild(animatedsprite);
               animatedsprite.play();
+              explosionSFX.fade(0.1, 0, 800, explosionSFX.play());
             });
 
             _event2.default.on(_events2.default.PROJECTILE, function(_ref3) {
@@ -58521,6 +58553,8 @@ Negotiator._addProvider = function(provider) {
                 32,
                 32
               );
+
+              projectileSFX.fade(0.1, 0, 200, projectileSFX.play());
 
               app.stage.addChild(p.sprite);
               projectiles.push(p);
@@ -58604,17 +58638,24 @@ Negotiator._addProvider = function(provider) {
                   app.stage.addChild(fuji);
                   app.stage.addChild(player.sprite);
                   // Listen for frame updates
+                  var isReady = false;
                   app.ticker.add(function() {
-                    player.updatePosition();
-                    projectiles.forEach(function(p) {
-                      return p.updatePosition();
-                    });
-                    projectiles = projectiles.filter(function(p) {
-                      return !p.disabled;
-                    });
-                    fuji.tilePosition.y -= 2;
+                    if (isReady) {
+                      player.updatePosition();
+                      projectiles.forEach(function(p) {
+                        return p.updatePosition();
+                      });
+                      projectiles = projectiles.filter(function(p) {
+                        return !p.disabled;
+                      });
+                      fuji.tilePosition.y -= 2;
+                    }
                   });
-                  onReady();
+
+                  Promise.all(soundsBank).then(function() {
+                    onReady();
+                    isReady = true;
+                  });
                 });
             };
             initialize();
@@ -58841,7 +58882,7 @@ Negotiator._addProvider = function(provider) {
           var hostname = "" || location.hostname;
           var protocol = location.protocol === "https:" ? "wss" : "ws";
           var ws = new WebSocket(
-            protocol + "://" + hostname + ":" + "54653" + "/"
+            protocol + "://" + hostname + ":" + "62008" + "/"
           );
           ws.onmessage = function(event) {
             var data = JSON.parse(event.data);
