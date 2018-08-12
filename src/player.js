@@ -4,6 +4,21 @@ import Event from "./event";
 import EVENTS from "./events";
 
 const vector = (x, y) => new PIXI.Point(x, y);
+const clamp = (point, boundary) => {
+  if (point.x < boundary.tl.x) {
+    point.x = boundary.tl.x;
+  }
+  if (point.y < boundary.tl.y) {
+    point.y = boundary.tl.y;
+  }
+  if (point.x > boundary.br.x) {
+    point.x = boundary.br.x;
+  }
+  if (point.y > boundary.br.y) {
+    point.y = boundary.br.y;
+  }
+  return point;
+};
 
 export default class Player extends GameObject {
   constructor(sprite, state, x = 0, y = 0, w = 128, h = 128) {
@@ -57,8 +72,9 @@ export default class Player extends GameObject {
               this.sprite.gotoAndStop(0);
             }
 
-            this.sprite.position = vector(x, y).add(
-              vector(endX - startX, endY - startY)
+            this.sprite.position = clamp(
+              vector(x, y).add(vector(endX - startX, endY - startY)),
+              state.boundaries
             );
           }
         }
