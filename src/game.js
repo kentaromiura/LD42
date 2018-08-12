@@ -4,6 +4,7 @@ import Projectile from "./projectile";
 import Event from "./event";
 import EVENTS from "./events";
 import Score from "./score";
+import GameOver from "./gameOver";
 import Enemy from "./enemy";
 import EnemyGroup from "./enemygroup";
 import AABB from "./collision";
@@ -38,6 +39,7 @@ const vector = (x, y) => new PIXI.Point(x, y);
 export default class Game {
   constructor(app, state, onReady = () => {}) {
     const score = new Score();
+    const gameOver = new GameOver();
     const testEnemyGroup = new EnemyGroup();
 
     this.app = app;
