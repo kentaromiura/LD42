@@ -69,7 +69,7 @@ var bezier = function(vectors, epsilon) {
 
 }
 
-exports default bezier;
+export default bezier;
 
 // use with http://kamicane.github.io/equation-designer/
 // or http://requirebin.com/?gist=kentaromiura/b7509d6bec83783be37b
