@@ -6,11 +6,12 @@ import EVENTS from "./events";
 const vector = (x, y) => new PIXI.Point(x, y);
 
 export default class Player extends GameObject {
-  constructor(sprite, state, x = 0, y = 0, w = 128, h = 128) {
+  constructor(sprite, state, x = 0, y = 0, w = 128, h = 128, hp) {
     super(x, y, w, h);
-
+    this.hp = 30;
     this.state = state;
     this.sprite = sprite;
+    this.disabled = false;
 
     sprite.anchor.x = 0.5;
     sprite.anchor.y = 0.5;
@@ -23,5 +24,16 @@ export default class Player extends GameObject {
     this.h = 128 - 32;
   }
 
-  updatePosition() {}
+  hitBy(dmg) {
+    this.hp -= dmg;
+    if (this.hp <= 0) {
+      this.disabled = true;
+      this.sprite.destroy();
+      Event.fire(EVENTS.ENEMY_DIE);
+    }
+  }
+
+  updatePosition() {
+    if (this.disabled) return;
+  }
 }
