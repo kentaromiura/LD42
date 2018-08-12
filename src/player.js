@@ -76,6 +76,8 @@ export default class Player extends GameObject {
               vector(x, y).add(vector(endX - startX, endY - startY)),
               state.boundaries
             );
+            this.x = this.sprite.x;
+            this.y = this.sprite.y;
           }
         }
       }

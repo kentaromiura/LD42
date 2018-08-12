@@ -6,6 +6,8 @@ import EVENTS from "./events";
 import Score from "./score";
 import GameOver from "./gameOver";
 import Enemy from "./enemy";
+import Boss from "./boss";
+
 import EnemyGroup from "./enemygroup";
 import AABB from "./collision";
 
@@ -32,6 +34,8 @@ soundsBank.push(
 );
 
 let projectiles = [];
+let enemyprojectiles = [];
+
 let enemies = [];
 
 const vector = (x, y) => new PIXI.Point(x, y);
@@ -87,6 +91,21 @@ export default class Game {
       projectiles.push(p);
     });
 
+    Event.on(EVENTS.BOSS_PROJECTILE, ({ x, y }) => {
+      const p = new Projectile(
+        this.assetManager.bossProjectile(),
+        x,
+        y,
+        32,
+        32,
+        +20,
+        app.renderer.height
+      );
+      enemyprojectiles.push(p);
+      app.stage.addChild(p.sprite);
+      p.sprite.play();
+    });
+
     const initialize = () => {
       const playerWidth = 128;
       const playerHeight = 128;
@@ -108,8 +127,10 @@ export default class Game {
         .add("player", "assets/airplane5-dot.png")
         .add("playerTiltLeft", "assets/airplane5-left-dot.png")
         .add("playerTiltRight", "assets/airplane5-right-dot.png")
+        .add("bossProjectile", "assets/enemy-cross4.png")
         .add("projectile", "assets/test.json")
         .add("explosion", "assets/explosion.json")
+        .add("boss", "assets/enemy-rotate.json")
         .add("enemy", "assets/enemy1.png")
         .load((loader, resources) => {
           this.assetManager.enemy = () =>
@@ -136,6 +157,25 @@ export default class Game {
               ].map(file => PIXI.Sprite.fromFrame(file).texture)
             );
           };
+          this.assetManager.boss = () => {
+            return new PIXI.extras.AnimatedSprite(
+              [
+                "enemy1-dot-1.png",
+                "enemy1-dot-2.png",
+                "enemy1-dot-3.png",
+                "enemy1-dot-4.png",
+                "enemy1-dot-5.png",
+                "enemy1-dot-6.png",
+                "enemy1-dot-7.png",
+                "enemy1-dot-8.png",
+                "enemy1-dot-9.png",
+                "enemy1-dot-10.png",
+                "enemy1-dot-11.png"
+              ].map(file => PIXI.Sprite.fromFrame(file).texture)
+            );
+          };
+          this.assetManager.bossProjectile = () =>
+            new PIXI.extras.AnimatedSprite([resources.bossProjectile.texture]);
 
           const centerX = app.renderer.width / 2;
           const centerY = app.renderer.height / 2;
@@ -169,6 +209,11 @@ export default class Game {
           // Listen for frame updates
           let isReady = false;
 
+          // TEST BOSS
+          const boss = new Boss(this.assetManager.boss(), state, 400, 400);
+          app.stage.addChild(boss.sprite);
+          boss.sprite.play();
+
           const enemy = new Enemy(
             this.assetManager.enemy(),
             state,
@@ -195,6 +240,14 @@ export default class Game {
                 }
               });
               enemies = enemies.filter(p => !p.disabled);
+              enemyprojectiles.forEach(p => p.updatePosition());
+              enemyprojectiles = enemyprojectiles.filter(p => !p.disabled);
+              if ((check = AABB(enemyprojectiles, player))) {
+                check.destroy();
+                player.sprite.destroy();
+                explosionSFX.play();
+                gameOver.showGameOver();
+              }
               fuji.tilePosition.y -= 2;
             }
           });
