@@ -42,6 +42,19 @@ export default class Game {
     });
 
     const initialize = () => {
+      const playerWidth = 128;
+      const playerHeight = 128;
+      state.boundaries = {
+        tl: {
+          x: playerWidth / 2,
+          y: playerHeight / 2
+        },
+        br: {
+          x: app.renderer.width - playerWidth / 2,
+          y: app.renderer.height - playerHeight / 2
+        }
+      };
+
       // load the texture we need
       PIXI.loader
         .add("fuji", "assets/fuji.jpeg")
@@ -83,7 +96,9 @@ export default class Game {
             ]),
             state,
             centerX,
-            centerY
+            centerY,
+            playerWidth,
+            playerHeight
           );
           // This creates a texture from a 'fuji.png' image
           var fuji = new PIXI.extras.TilingSprite(
