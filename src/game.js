@@ -5,6 +5,7 @@ import Event from "./event";
 import EVENTS from "./events";
 import Score from "./score";
 import Enemy from "./enemy";
+import EnemyGroup from "./enemygroup";
 import AABB from "./collision";
 
 const soundsBank = [];
@@ -37,6 +38,7 @@ const vector = (x, y) => new PIXI.Point(x, y);
 export default class Game {
   constructor(app, state, onReady = () => {}) {
     const score = new Score();
+    const testEnemyGroup = new EnemyGroup();
 
     this.app = app;
     this.assetManager = {};
@@ -173,6 +175,7 @@ export default class Game {
             playerWidth,
             playerHeight
           );
+          testEnemyGroup.add(enemy);
           enemies.push(enemy);
           app.stage.addChild(enemy.sprite);
 
