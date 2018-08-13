@@ -7,6 +7,7 @@ import Score from "./score";
 import GameOver from "./gameOver";
 import Enemy from "./enemy";
 import Boss from "./boss";
+import PowerUP from "./powerUp";
 
 import EnemyGroup from "./enemygroup";
 import AABB from "./collision";
@@ -17,25 +18,24 @@ const sound = new Howl({ src: ["assets/Orbital_Colossus.mp3"], volume: 0.1 });
 const projectileSFX = new Howl({ src: ["assets/laser.wav"], volume: 0.15 });
 const explosionSFX = new Howl({ src: ["assets/explosion.wav"], volume: 0.15 });
 const enemyHurtSFX = new Howl({ src: ["assets/enemyhurt.wav"], volume: 0.3 });
+const powerUpSFX = new Howl({ src: ["assets/powerup.wav"], volume: 0.15 });
+
+const promiseFromSFX = sfx =>
+  new Promise((ok, ko) => {
+    sfx.on("load", () => ok());
+  });
 
 soundsBank.push(
-  new Promise((ok, ko) => {
-    sound.on("load", () => ok());
-  }),
-  new Promise((ok, ko) => {
-    explosionSFX.on("load", () => ok());
-  }),
-  new Promise((ok, ko) => {
-    projectileSFX.on("load", () => ok());
-  }),
-  new Promise((ok, ko) => {
-    enemyHurtSFX.on("load", () => ok());
-  })
+  promiseFromSFX(sound),
+  promiseFromSFX(explosionSFX),
+  promiseFromSFX(projectileSFX),
+  promiseFromSFX(enemyHurtSFX),
+  promiseFromSFX(powerUpSFX)
 );
 
 let projectiles = [];
 let enemyprojectiles = [];
-
+let powerUps = [];
 let enemies = [];
 
 const vector = (x, y) => new PIXI.Point(x, y);
@@ -74,6 +74,12 @@ export default class Game {
 
     Event.on(EVENTS.ENEMY_DIE, () => {
       enemyHurtSFX.fade(0.1, 0, 800, enemyHurtSFX.play());
+    });
+
+    Event.on(EVENTS.POWER_UP, ({ x, y, type }) => {
+      const p = new PowerUP(this.assetManager.powerUp(), type, x, y);
+      app.stage.addChild(p.sprite);
+      powerUps.push(p);
     });
 
     Event.on(EVENTS.PROJECTILE, ({ x, y }) => {
@@ -132,7 +138,15 @@ export default class Game {
         .add("explosion", "assets/explosion.json")
         .add("boss", "assets/enemy-rotate.json")
         .add("enemy", "assets/enemy1.png")
+        .add("star", "assets/star-dot.png")
+        .add("star2", "assets/star-dot2.png")
         .load((loader, resources) => {
+          this.assetManager.powerUp = () =>
+            new PIXI.extras.AnimatedSprite([
+              resources.star.texture,
+              resources.star2.texture
+            ]);
+
           this.assetManager.enemy = () =>
             new PIXI.extras.AnimatedSprite([resources.enemy.texture]);
 
@@ -232,6 +246,7 @@ export default class Game {
               projectiles.forEach(p => p.updatePosition());
               projectiles = projectiles.filter(p => !p.disabled);
               let check;
+
               enemies.forEach(enemy => {
                 enemy.updatePosition(); // TODO: implement it...
                 if ((check = AABB(projectiles, enemy))) {
@@ -240,6 +255,7 @@ export default class Game {
                 }
               });
               enemies = enemies.filter(p => !p.disabled);
+
               enemyprojectiles.forEach(p => p.updatePosition());
               enemyprojectiles = enemyprojectiles.filter(p => !p.disabled);
               if ((check = AABB(enemyprojectiles, player))) {
@@ -248,6 +264,15 @@ export default class Game {
                 explosionSFX.play();
                 gameOver.showGameOver();
               }
+
+              powerUps.forEach(p => p.updatePosition());
+              powerUps = powerUps.filter(p => !p.disabled);
+              if ((check = AABB(powerUps, player))) {
+                check.collected();
+                powerUpSFX.play();
+                // TODO: start power up effect.
+              }
+
               fuji.tilePosition.y -= 2;
             }
           });
