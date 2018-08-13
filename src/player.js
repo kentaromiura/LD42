@@ -78,6 +78,11 @@ export default class Player extends GameObject {
     Event.fire(EVENTS.ENTER_STAGE, { sprite: this.sprite });
   }
 
+  fixPosition(y) {
+    this.sprite.y = Math.min(this.sprite.y, y);
+    this.y = this.sprite.y;
+  }
+
   updatePosition() {
     if (this.nextShotIn < 0) {
       this.nextShotIn = this.currentShotSpeed;

@@ -6,7 +6,8 @@ const EVENTS = {
   BOSS_PROJECTILE: "boss_projectile",
   POWER_UP: "power_up",
   ENTER_STAGE: "enter_stage",
-  EXIT_STAGE: "exit_stage"
+  EXIT_STAGE: "exit_stage",
+  INCREASE_BLACKHOLE: "increase_blackhole"
 };
 
 export default EVENTS;
