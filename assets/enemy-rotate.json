@@ -1,0 +1,114 @@
+{"frames": {
+
+"enemy1-dot-1.png":
+{
+	"frame": {"x":0,"y":0,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+},
+"enemy1-dot-2.png":
+{
+	"frame": {"x":300,"y":0,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+},
+"enemy1-dot-3.png":
+{
+	"frame": {"x":600,"y":0,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+},
+"enemy1-dot-4.png":
+{
+	"frame": {"x":900,"y":0,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+},
+"enemy1-dot-5.png":
+{
+	"frame": {"x":1200,"y":0,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+},
+"enemy1-dot-6.png":
+{
+	"frame": {"x":1500,"y":0,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+},
+"enemy1-dot-7.png":
+{
+	"frame": {"x":0,"y":300,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+},
+"enemy1-dot-8.png":
+{
+	"frame": {"x":300,"y":300,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+},
+"enemy1-dot-9.png":
+{
+	"frame": {"x":600,"y":300,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+},
+"enemy1-dot-10.png":
+{
+	"frame": {"x":900,"y":300,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+},
+"enemy1-dot-11.png":
+{
+	"frame": {"x":1200,"y":300,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300},
+	"anchor": {"x":0.5,"y":0.5}
+}},
+"animations": {
+	"enemy1-dot": ["enemy1-dot-1.png","enemy1-dot-2.png","enemy1-dot-3.png","enemy1-dot-4.png","enemy1-dot-5.png","enemy1-dot-6.png","enemy1-dot-7.png","enemy1-dot-8.png","enemy1-dot-9.png","enemy1-dot-10.png","enemy1-dot-11.png"]
+},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "enemy-rotate.png",
+	"format": "RGBA8888",
+	"size": {"w":1800,"h":600},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:9d55fe18d9f92c676bc2d3408447475b:c222c8d32c647e1a49407c5cd4b52713:1e97653b8aef4dc06113a7a6d0847a10$"
+}
+}

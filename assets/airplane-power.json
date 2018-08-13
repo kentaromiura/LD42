@@ -1,0 +1,60 @@
+{"frames": {
+
+    "airplane5-dot-1.png":
+    {
+        "frame": {"x":0,"y":0,"w":300,"h":300},
+        "rotated": false,
+        "trimmed": false,
+        "spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+        "sourceSize": {"w":300,"h":300},
+        "anchor": {"x":0.5,"y":0.5}
+    },
+    "airplane5-dot-2.png":
+    {
+        "frame": {"x":300,"y":0,"w":300,"h":300},
+        "rotated": false,
+        "trimmed": false,
+        "spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+        "sourceSize": {"w":300,"h":300},
+        "anchor": {"x":0.5,"y":0.5}
+    },
+    "airplane5-dot-3.png":
+    {
+        "frame": {"x":600,"y":0,"w":300,"h":300},
+        "rotated": false,
+        "trimmed": false,
+        "spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+        "sourceSize": {"w":300,"h":300},
+        "anchor": {"x":0.5,"y":0.5}
+    },
+    "airplane5-dot-4.png":
+    {
+        "frame": {"x":900,"y":0,"w":300,"h":300},
+        "rotated": false,
+        "trimmed": false,
+        "spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+        "sourceSize": {"w":300,"h":300},
+        "anchor": {"x":0.5,"y":0.5}
+    },
+    "airplane5-dot-5.png":
+    {
+        "frame": {"x":1200,"y":0,"w":300,"h":300},
+        "rotated": false,
+        "trimmed": false,
+        "spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+        "sourceSize": {"w":300,"h":300},
+        "anchor": {"x":0.5,"y":0.5}
+    }},
+    "animations": {
+        "airplane5-dot": ["airplane5-dot-1.png","airplane5-dot-2.png","airplane5-dot-3.png","airplane5-dot-4.png","airplane5-dot-5.png"]
+    },
+    "meta": {
+        "app": "https://www.codeandweb.com/texturepacker",
+        "version": "1.0",
+        "image": "airplane-power.png",
+        "format": "RGBA8888",
+        "size": {"w":1500,"h":300},
+        "scale": "1",
+        "smartupdate": "$TexturePacker:SmartUpdate:1fe0b84d2c06b3f78d79c90ac7c7ad63:7b6ebd5d4affc99d0028f0bbf281edea:5137098258e00604ae67278e4a68215a$"
+    }
+    }

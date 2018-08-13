@@ -57907,7 +57907,12 @@ Negotiator._addProvider = function(provider) {
         var EVENTS = {
           ADD_SCORE: "add_score",
           PROJECTILE: "projectile",
-          EXPLOSION: "explosion"
+          EXPLOSION: "explosion",
+          ENEMY_DIE: "enemy_die",
+          BOSS_PROJECTILE: "boss_projectile",
+          POWER_UP: "power_up",
+          ENTER_STAGE: "enter_stage",
+          EXIT_STAGE: "exit_stage"
         };
 
         exports.default = EVENTS;
@@ -58039,22 +58044,22 @@ Negotiator._addProvider = function(provider) {
         var Player = (function(_GameObject) {
           _inherits(Player, _GameObject);
 
-          function Player(sprite, state) {
+          function Player(sprite, spritepowered, state) {
             var x =
-              arguments.length > 2 && arguments[2] !== undefined
-                ? arguments[2]
-                : 0;
-            var y =
               arguments.length > 3 && arguments[3] !== undefined
                 ? arguments[3]
                 : 0;
-            var w =
+            var y =
               arguments.length > 4 && arguments[4] !== undefined
                 ? arguments[4]
-                : 128;
-            var h =
+                : 0;
+            var w =
               arguments.length > 5 && arguments[5] !== undefined
                 ? arguments[5]
+                : 128;
+            var h =
+              arguments.length > 6 && arguments[6] !== undefined
+                ? arguments[6]
                 : 128;
 
             _classCallCheck(this, Player);
@@ -58074,15 +58079,79 @@ Negotiator._addProvider = function(provider) {
             _this.currentShotSpeed = 15;
             _this.state = state;
             _this.sprite = sprite;
+            _this.basesprite = sprite;
+
+            _this.powered = spritepowered;
+            _this.powered.animationSpeed = 1 / 5;
+
+            _this.isPowered = false;
             sprite.anchor.x = 0.5;
             sprite.anchor.y = 0.5;
+            _this.powered.anchor.x = 0.5;
+            _this.powered.anchor.y = 0.5;
             sprite.position = vector(x, y);
+
             sprite.width = w;
             sprite.height = h;
+            _this.powered.width = w;
+            _this.powered.height = h;
             return _this;
           }
 
           _createClass(Player, [
+            {
+              key: "powerUp",
+              value: function powerUp() {
+                this.isPowered = true;
+                var _sprite$position = this.sprite.position,
+                  x = _sprite$position.x,
+                  y = _sprite$position.y;
+
+                _event2.default.fire(_events2.default.EXIT_STAGE, {
+                  sprite: this.sprite
+                });
+
+                this.sprite = this.powered;
+                this.sprite.position.x = x;
+                this.sprite.position.y = y;
+                _event2.default.fire(_events2.default.ENTER_STAGE, {
+                  sprite: this.sprite
+                });
+                this.sprite.play();
+              }
+            },
+            {
+              key: "hit",
+              value: function hit() {
+                var isAlive = true;
+                if (!this.isPowered) {
+                  isAlive = false;
+                  this.sprite.destroy();
+                } else {
+                  this.powerDown();
+                }
+                return isAlive;
+              }
+            },
+            {
+              key: "powerDown",
+              value: function powerDown() {
+                this.isPowered = false;
+                var _sprite$position2 = this.sprite.position,
+                  x = _sprite$position2.x,
+                  y = _sprite$position2.y;
+
+                _event2.default.fire(_events2.default.EXIT_STAGE, {
+                  sprite: this.sprite
+                });
+                this.sprite = this.basesprite;
+                this.sprite.position.x = x;
+                this.sprite.position.y = y;
+                _event2.default.fire(_events2.default.ENTER_STAGE, {
+                  sprite: this.sprite
+                });
+              }
+            },
             {
               key: "updatePosition",
               value: function updatePosition() {
@@ -58130,6 +58199,8 @@ Negotiator._addProvider = function(provider) {
                           ),
                           state.boundaries
                         );
+                        this.x = this.sprite.x;
+                        this.y = this.sprite.y;
                       }
                     }
                   }
@@ -58277,6 +58348,14 @@ Negotiator._addProvider = function(provider) {
               arguments.length > 4 && arguments[4] !== undefined
                 ? arguments[4]
                 : 32;
+            var direction =
+              arguments.length > 5 && arguments[5] !== undefined
+                ? arguments[5]
+                : -20;
+            var maxHeight =
+              arguments.length > 6 && arguments[6] !== undefined
+                ? arguments[6]
+                : +Infinity;
 
             _classCallCheck(this, Projectile);
 
@@ -58292,6 +58371,8 @@ Negotiator._addProvider = function(provider) {
             );
 
             _this.sprite = animatedsprite;
+            _this.direction = direction;
+            _this.maxHeight = maxHeight;
             animatedsprite.loop = true;
             animatedsprite.animationSpeed = 1 / 5;
 
@@ -58306,15 +58387,34 @@ Negotiator._addProvider = function(provider) {
 
           _createClass(Projectile, [
             {
+              key: "destroy",
+              value: function destroy() {
+                this.disabled = true;
+                _event2.default.fire(_events2.default.EXPLOSION, {
+                  x: this.sprite.x,
+                  y: this.sprite.y
+                });
+                this.sprite.destroy();
+              }
+            },
+            {
               key: "updatePosition",
               value: function updatePosition() {
-                this.sprite.y -= 20;
+                if (this.disabled) return;
+                this.sprite.y += this.direction;
+                if (this.direction > 0) {
+                  this.sprite.rotation =
+                    (Math.PI / 2) * Math.sin(this.sprite.y / 100);
+                }
+                this.y = this.sprite.y;
                 if (this.sprite.y < 0 - 40) {
                   this.disabled = true;
-                  _event2.default.fire(_events2.default.EXPLOSION, {
-                    x: this.sprite.x,
-                    y: 16
-                  });
+                  this.sprite.destroy();
+                  return;
+                }
+
+                if (this.sprite.y > this.maxHeight) {
+                  this.disabled = true;
                   this.sprite.destroy();
                 }
               }
@@ -58405,6 +58505,788 @@ Negotiator._addProvider = function(provider) {
       },
       {}
     ],
+    "src\\gameOver.js": [
+      function(require, module, exports) {
+        "use strict";
+
+        Object.defineProperty(exports, "__esModule", {
+          value: true
+        });
+
+        var _createClass = (function() {
+          function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+              var descriptor = props[i];
+              descriptor.enumerable = descriptor.enumerable || false;
+              descriptor.configurable = true;
+              if ("value" in descriptor) descriptor.writable = true;
+              Object.defineProperty(target, descriptor.key, descriptor);
+            }
+          }
+          return function(Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+          };
+        })();
+
+        function _classCallCheck(instance, Constructor) {
+          if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+          }
+        }
+
+        var GameOver = (function() {
+          _createClass(GameOver, [
+            {
+              key: "showGameOver",
+              value: function showGameOver() {
+                console.log("GAME IS OVER!!!");
+                this.element.classList.remove("hide");
+              }
+            },
+            {
+              key: "updateGameOver",
+              value: function updateGameOver() {
+                this.element.innerHTML = "GAME OVER";
+              }
+            }
+          ]);
+
+          function GameOver() {
+            _classCallCheck(this, GameOver);
+
+            var gameOver = document.createElement("div");
+            gameOver.classList.add("gameOver");
+            gameOver.classList.add("hide");
+            var target = document.getElementById("target");
+            target.appendChild(gameOver);
+            this.element = gameOver;
+            this.updateGameOver();
+          }
+
+          return GameOver;
+        })();
+
+        exports.default = GameOver;
+      },
+      {}
+    ],
+    "src\\enemy.js": [
+      function(require, module, exports) {
+        "use strict";
+
+        Object.defineProperty(exports, "__esModule", {
+          value: true
+        });
+
+        var _createClass = (function() {
+          function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+              var descriptor = props[i];
+              descriptor.enumerable = descriptor.enumerable || false;
+              descriptor.configurable = true;
+              if ("value" in descriptor) descriptor.writable = true;
+              Object.defineProperty(target, descriptor.key, descriptor);
+            }
+          }
+          return function(Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+          };
+        })();
+
+        var _gameObject = require("./gameObject");
+
+        var _gameObject2 = _interopRequireDefault(_gameObject);
+
+        var _pixi = require("pixi.js");
+
+        var PIXI = _interopRequireWildcard(_pixi);
+
+        var _event = require("./event");
+
+        var _event2 = _interopRequireDefault(_event);
+
+        var _events = require("./events");
+
+        var _events2 = _interopRequireDefault(_events);
+
+        function _interopRequireWildcard(obj) {
+          if (obj && obj.__esModule) {
+            return obj;
+          } else {
+            var newObj = {};
+            if (obj != null) {
+              for (var key in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, key))
+                  newObj[key] = obj[key];
+              }
+            }
+            newObj.default = obj;
+            return newObj;
+          }
+        }
+
+        function _interopRequireDefault(obj) {
+          return obj && obj.__esModule ? obj : { default: obj };
+        }
+
+        function _classCallCheck(instance, Constructor) {
+          if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+          }
+        }
+
+        function _possibleConstructorReturn(self, call) {
+          if (!self) {
+            throw new ReferenceError(
+              "this hasn't been initialised - super() hasn't been called"
+            );
+          }
+          return call &&
+            (typeof call === "object" || typeof call === "function")
+            ? call
+            : self;
+        }
+
+        function _inherits(subClass, superClass) {
+          if (typeof superClass !== "function" && superClass !== null) {
+            throw new TypeError(
+              "Super expression must either be null or a function, not " +
+                typeof superClass
+            );
+          }
+          subClass.prototype = Object.create(
+            superClass && superClass.prototype,
+            {
+              constructor: {
+                value: subClass,
+                enumerable: false,
+                writable: true,
+                configurable: true
+              }
+            }
+          );
+          if (superClass)
+            Object.setPrototypeOf
+              ? Object.setPrototypeOf(subClass, superClass)
+              : (subClass.__proto__ = superClass);
+        }
+
+        var vector = function vector(x, y) {
+          return new PIXI.Point(x, y);
+        };
+
+        var Enemy = (function(_GameObject) {
+          _inherits(Enemy, _GameObject);
+
+          function Enemy(sprite, state) {
+            var x =
+              arguments.length > 2 && arguments[2] !== undefined
+                ? arguments[2]
+                : 0;
+            var y =
+              arguments.length > 3 && arguments[3] !== undefined
+                ? arguments[3]
+                : 0;
+            var w =
+              arguments.length > 4 && arguments[4] !== undefined
+                ? arguments[4]
+                : 128;
+            var h =
+              arguments.length > 5 && arguments[5] !== undefined
+                ? arguments[5]
+                : 128;
+            var hp = arguments[6];
+            var group =
+              arguments.length > 7 && arguments[7] !== undefined
+                ? arguments[7]
+                : null;
+
+            _classCallCheck(this, Enemy);
+
+            var _this = _possibleConstructorReturn(
+              this,
+              (Enemy.__proto__ || Object.getPrototypeOf(Enemy)).call(
+                this,
+                x,
+                y,
+                w,
+                h
+              )
+            );
+
+            _this.hp = 30;
+            _this.state = state;
+            _this.sprite = sprite;
+            _this.disabled = false;
+            _this.group = group;
+
+            sprite.anchor.x = 0.5;
+            sprite.anchor.y = 0.5;
+            sprite.position = vector(x, y);
+            sprite.width = w;
+            sprite.height = h;
+
+            // fix size for collision check
+            _this.w = 32;
+            _this.h = 128 - 32;
+            return _this;
+          }
+
+          _createClass(Enemy, [
+            {
+              key: "hitBy",
+              value: function hitBy(dmg) {
+                this.hp -= dmg;
+                if (this.hp <= 0) {
+                  this.disabled = true;
+                  if (this.group) this.group.remove(this);
+
+                  this.sprite.destroy();
+                  _event2.default.fire(_events2.default.ENEMY_DIE);
+                }
+              }
+            },
+            {
+              key: "updatePosition",
+              value: function updatePosition() {
+                if (this.disabled) return;
+              }
+            }
+          ]);
+
+          return Enemy;
+        })(_gameObject2.default);
+
+        exports.default = Enemy;
+      },
+      {
+        "./gameObject": "src\\gameObject.js",
+        "pixi.js": "node_modules\\pixi.js\\lib\\index.js",
+        "./event": "src\\event.js",
+        "./events": "src\\events.js"
+      }
+    ],
+    "src\\boss.js": [
+      function(require, module, exports) {
+        "use strict";
+
+        Object.defineProperty(exports, "__esModule", {
+          value: true
+        });
+
+        var _createClass = (function() {
+          function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+              var descriptor = props[i];
+              descriptor.enumerable = descriptor.enumerable || false;
+              descriptor.configurable = true;
+              if ("value" in descriptor) descriptor.writable = true;
+              Object.defineProperty(target, descriptor.key, descriptor);
+            }
+          }
+          return function(Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+          };
+        })();
+
+        var _gameObject = require("./gameObject");
+
+        var _gameObject2 = _interopRequireDefault(_gameObject);
+
+        var _pixi = require("pixi.js");
+
+        var PIXI = _interopRequireWildcard(_pixi);
+
+        var _event = require("./event");
+
+        var _event2 = _interopRequireDefault(_event);
+
+        var _events = require("./events");
+
+        var _events2 = _interopRequireDefault(_events);
+
+        function _interopRequireWildcard(obj) {
+          if (obj && obj.__esModule) {
+            return obj;
+          } else {
+            var newObj = {};
+            if (obj != null) {
+              for (var key in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, key))
+                  newObj[key] = obj[key];
+              }
+            }
+            newObj.default = obj;
+            return newObj;
+          }
+        }
+
+        function _interopRequireDefault(obj) {
+          return obj && obj.__esModule ? obj : { default: obj };
+        }
+
+        function _classCallCheck(instance, Constructor) {
+          if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+          }
+        }
+
+        function _possibleConstructorReturn(self, call) {
+          if (!self) {
+            throw new ReferenceError(
+              "this hasn't been initialised - super() hasn't been called"
+            );
+          }
+          return call &&
+            (typeof call === "object" || typeof call === "function")
+            ? call
+            : self;
+        }
+
+        function _inherits(subClass, superClass) {
+          if (typeof superClass !== "function" && superClass !== null) {
+            throw new TypeError(
+              "Super expression must either be null or a function, not " +
+                typeof superClass
+            );
+          }
+          subClass.prototype = Object.create(
+            superClass && superClass.prototype,
+            {
+              constructor: {
+                value: subClass,
+                enumerable: false,
+                writable: true,
+                configurable: true
+              }
+            }
+          );
+          if (superClass)
+            Object.setPrototypeOf
+              ? Object.setPrototypeOf(subClass, superClass)
+              : (subClass.__proto__ = superClass);
+        } // This is just like an enemy, but it shoots back at us.
+
+        var vector = function vector(x, y) {
+          return new PIXI.Point(x, y);
+        };
+
+        var Boss = (function(_GameObject) {
+          _inherits(Boss, _GameObject);
+
+          function Boss(sprite, state) {
+            var x =
+              arguments.length > 2 && arguments[2] !== undefined
+                ? arguments[2]
+                : 0;
+            var y =
+              arguments.length > 3 && arguments[3] !== undefined
+                ? arguments[3]
+                : 0;
+            var w =
+              arguments.length > 4 && arguments[4] !== undefined
+                ? arguments[4]
+                : 256;
+            var h =
+              arguments.length > 5 && arguments[5] !== undefined
+                ? arguments[5]
+                : 256;
+            var hp = arguments[6];
+            var group =
+              arguments.length > 7 && arguments[7] !== undefined
+                ? arguments[7]
+                : null;
+
+            _classCallCheck(this, Boss);
+
+            var _this = _possibleConstructorReturn(
+              this,
+              (Boss.__proto__ || Object.getPrototypeOf(Boss)).call(
+                this,
+                x,
+                y,
+                w,
+                h
+              )
+            );
+
+            _this.hp = 30;
+            _this.state = state;
+            _this.sprite = sprite;
+            _this.disabled = false;
+            _this.group = group;
+
+            sprite.anchor.x = 0.5;
+            sprite.anchor.y = 0.5;
+            sprite.position = vector(x, y);
+            sprite.width = w;
+            sprite.height = h;
+
+            // fix size for collision check
+            _this.w = 64;
+            _this.h = 256 - 64;
+            _this.interval = setInterval(function() {
+              _event2.default.fire(_events2.default.BOSS_PROJECTILE, {
+                x: _this.sprite.x,
+                y: _this.sprite.y
+              });
+            }, 1000);
+            return _this;
+          }
+
+          _createClass(Boss, [
+            {
+              key: "hitBy",
+              value: function hitBy(dmg) {
+                this.hp -= dmg;
+                if (this.hp <= 0) {
+                  clearInterval(this.interval);
+                  this.disabled = true;
+                  if (this.group) this.group.remove(this);
+
+                  this.sprite.destroy();
+                  _event2.default.fire(_events2.default.ENEMY_DIE);
+                }
+              }
+            },
+            {
+              key: "updatePosition",
+              value: function updatePosition() {
+                if (this.disabled) return;
+                // TODO: movement pattern
+              }
+            }
+          ]);
+
+          return Boss;
+        })(_gameObject2.default);
+
+        exports.default = Boss;
+      },
+      {
+        "./gameObject": "src\\gameObject.js",
+        "pixi.js": "node_modules\\pixi.js\\lib\\index.js",
+        "./event": "src\\event.js",
+        "./events": "src\\events.js"
+      }
+    ],
+    "src\\powerUp.js": [
+      function(require, module, exports) {
+        "use strict";
+
+        Object.defineProperty(exports, "__esModule", {
+          value: true
+        });
+
+        var _createClass = (function() {
+          function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+              var descriptor = props[i];
+              descriptor.enumerable = descriptor.enumerable || false;
+              descriptor.configurable = true;
+              if ("value" in descriptor) descriptor.writable = true;
+              Object.defineProperty(target, descriptor.key, descriptor);
+            }
+          }
+          return function(Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+          };
+        })();
+
+        var _gameObject = require("./gameObject");
+
+        var _gameObject2 = _interopRequireDefault(_gameObject);
+
+        var _pixi = require("pixi.js");
+
+        var PIXI = _interopRequireWildcard(_pixi);
+
+        var _event = require("./event");
+
+        var _event2 = _interopRequireDefault(_event);
+
+        var _events = require("./events");
+
+        var _events2 = _interopRequireDefault(_events);
+
+        function _interopRequireWildcard(obj) {
+          if (obj && obj.__esModule) {
+            return obj;
+          } else {
+            var newObj = {};
+            if (obj != null) {
+              for (var key in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, key))
+                  newObj[key] = obj[key];
+              }
+            }
+            newObj.default = obj;
+            return newObj;
+          }
+        }
+
+        function _interopRequireDefault(obj) {
+          return obj && obj.__esModule ? obj : { default: obj };
+        }
+
+        function _classCallCheck(instance, Constructor) {
+          if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+          }
+        }
+
+        function _possibleConstructorReturn(self, call) {
+          if (!self) {
+            throw new ReferenceError(
+              "this hasn't been initialised - super() hasn't been called"
+            );
+          }
+          return call &&
+            (typeof call === "object" || typeof call === "function")
+            ? call
+            : self;
+        }
+
+        function _inherits(subClass, superClass) {
+          if (typeof superClass !== "function" && superClass !== null) {
+            throw new TypeError(
+              "Super expression must either be null or a function, not " +
+                typeof superClass
+            );
+          }
+          subClass.prototype = Object.create(
+            superClass && superClass.prototype,
+            {
+              constructor: {
+                value: subClass,
+                enumerable: false,
+                writable: true,
+                configurable: true
+              }
+            }
+          );
+          if (superClass)
+            Object.setPrototypeOf
+              ? Object.setPrototypeOf(subClass, superClass)
+              : (subClass.__proto__ = superClass);
+        }
+
+        var vector = function vector(x, y) {
+          return new PIXI.Point(x, y);
+        };
+
+        var PowerUP = (function(_GameObject) {
+          _inherits(PowerUP, _GameObject);
+
+          function PowerUP(sprite, type) {
+            var x =
+              arguments.length > 2 && arguments[2] !== undefined
+                ? arguments[2]
+                : 0;
+            var y =
+              arguments.length > 3 && arguments[3] !== undefined
+                ? arguments[3]
+                : 0;
+            var w =
+              arguments.length > 4 && arguments[4] !== undefined
+                ? arguments[4]
+                : 128;
+            var h =
+              arguments.length > 5 && arguments[5] !== undefined
+                ? arguments[5]
+                : 128;
+
+            _classCallCheck(this, PowerUP);
+
+            var _this = _possibleConstructorReturn(
+              this,
+              (PowerUP.__proto__ || Object.getPrototypeOf(PowerUP)).call(
+                this,
+                x,
+                y,
+                w,
+                h
+              )
+            );
+
+            _this.sprite = sprite;
+            _this.disabled = false;
+            _this.type = type;
+            sprite.animationSpeed = 1 / 5;
+
+            sprite.anchor.x = 0.5;
+            sprite.anchor.y = 0.5;
+            sprite.position = vector(x, y);
+            sprite.width = w;
+            sprite.height = h;
+            sprite.play();
+            // fix size for collision check
+            // this.w = 32;
+            // this.h = 128 - 32;
+            return _this;
+          }
+
+          _createClass(PowerUP, [
+            {
+              key: "collected",
+              value: function collected() {
+                this.disabled = true;
+                this.sprite.destroy();
+                _event2.default.fire(_events2.default.POWERUP_COLLECTED, {
+                  type: this.type
+                });
+              }
+            },
+            {
+              key: "updatePosition",
+              value: function updatePosition() {
+                if (this.disabled) return;
+              }
+            }
+          ]);
+
+          return PowerUP;
+        })(_gameObject2.default);
+
+        exports.default = PowerUP;
+      },
+      {
+        "./gameObject": "src\\gameObject.js",
+        "pixi.js": "node_modules\\pixi.js\\lib\\index.js",
+        "./event": "src\\event.js",
+        "./events": "src\\events.js"
+      }
+    ],
+    "src\\enemygroup.js": [
+      function(require, module, exports) {
+        "use strict";
+
+        Object.defineProperty(exports, "__esModule", {
+          value: true
+        });
+
+        var _createClass = (function() {
+          function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+              var descriptor = props[i];
+              descriptor.enumerable = descriptor.enumerable || false;
+              descriptor.configurable = true;
+              if ("value" in descriptor) descriptor.writable = true;
+              Object.defineProperty(target, descriptor.key, descriptor);
+            }
+          }
+          return function(Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+          };
+        })();
+
+        var _event = require("./event");
+
+        var _event2 = _interopRequireDefault(_event);
+
+        var _events = require("./events");
+
+        var _events2 = _interopRequireDefault(_events);
+
+        function _interopRequireDefault(obj) {
+          return obj && obj.__esModule ? obj : { default: obj };
+        }
+
+        function _classCallCheck(instance, Constructor) {
+          if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+          }
+        }
+
+        var EnemyGroup = (function() {
+          function EnemyGroup() {
+            _classCallCheck(this, EnemyGroup);
+
+            this.enemies = [];
+          }
+
+          _createClass(EnemyGroup, [
+            {
+              key: "add",
+              value: function add(enemy) {
+                this.enemies.push(enemy);
+                enemy.group = this;
+                return this;
+              }
+            },
+            {
+              key: "remove",
+              value: function remove(enemyToRemove) {
+                this.enemies = this.enemies.filter(function(enemy) {
+                  return enemy != enemyToRemove;
+                });
+                if (this.enemies.length === 0) {
+                  _event2.default.fire(_events2.default.POWER_UP, {
+                    type: "star",
+                    x: enemyToRemove.sprite.x,
+                    y: enemyToRemove.sprite.y
+                  });
+
+                  console.log(
+                    "LEAVE POWER UP AT POSITION :",
+                    enemyToRemove.sprite.x,
+                    enemyToRemove.sprite.y
+                  );
+                }
+              }
+            }
+          ]);
+
+          return EnemyGroup;
+        })();
+
+        exports.default = EnemyGroup;
+      },
+      { "./event": "src\\event.js", "./events": "src\\events.js" }
+    ],
+    "src\\collision.js": [
+      function(require, module, exports) {
+        "use strict";
+
+        Object.defineProperty(exports, "__esModule", {
+          value: true
+        });
+        exports.default = checkCollision;
+        //function checks if bullets collide particular object
+        function checkCollision(bullets, object) {
+          return bullets.find(function(bullet) {
+            var bulletX = bullet.x;
+            var bulletY = bullet.y;
+            var bulletW = bullet.w;
+            var bulletH = bullet.h;
+
+            var objectX = object.x;
+            var objectY = object.y;
+            var objectW = object.w;
+            var objectH = object.h;
+
+            //check if two rectangles do not intersect
+            return (
+              bulletX + bulletW >= objectX &&
+              bulletX <= objectX + objectW &&
+              bulletY + bulletH >= objectY &&
+              bulletY <= objectY + objectH
+            );
+          });
+        }
+      },
+      {}
+    ],
     "src\\game.js": [
       function(require, module, exports) {
         "use strict";
@@ -58452,6 +59334,30 @@ Negotiator._addProvider = function(provider) {
 
         var _score2 = _interopRequireDefault(_score);
 
+        var _gameOver = require("./gameOver");
+
+        var _gameOver2 = _interopRequireDefault(_gameOver);
+
+        var _enemy = require("./enemy");
+
+        var _enemy2 = _interopRequireDefault(_enemy);
+
+        var _boss = require("./boss");
+
+        var _boss2 = _interopRequireDefault(_boss);
+
+        var _powerUp = require("./powerUp");
+
+        var _powerUp2 = _interopRequireDefault(_powerUp);
+
+        var _enemygroup = require("./enemygroup");
+
+        var _enemygroup2 = _interopRequireDefault(_enemygroup);
+
+        var _collision = require("./collision");
+
+        var _collision2 = _interopRequireDefault(_collision);
+
         function _interopRequireDefault(obj) {
           return obj && obj.__esModule ? obj : { default: obj };
         }
@@ -58476,26 +59382,36 @@ Negotiator._addProvider = function(provider) {
           src: ["assets/explosion.wav"],
           volume: 0.15
         });
+        var enemyHurtSFX = new _howler.Howl({
+          src: ["assets/enemyhurt.wav"],
+          volume: 0.3
+        });
+        var powerUpSFX = new _howler.Howl({
+          src: ["assets/powerup.wav"],
+          volume: 0.15
+        });
+
+        var promiseFromSFX = function promiseFromSFX(sfx) {
+          return new Promise(function(ok, ko) {
+            sfx.on("load", function() {
+              return ok();
+            });
+          });
+        };
 
         soundsBank.push(
-          new Promise(function(ok, ko) {
-            sound.on("load", function() {
-              return ok();
-            });
-          }),
-          new Promise(function(ok, ko) {
-            explosionSFX.on("load", function() {
-              return ok();
-            });
-          }),
-          new Promise(function(ok, ko) {
-            projectileSFX.on("load", function() {
-              return ok();
-            });
-          })
+          promiseFromSFX(sound),
+          promiseFromSFX(explosionSFX),
+          promiseFromSFX(projectileSFX),
+          promiseFromSFX(enemyHurtSFX),
+          promiseFromSFX(powerUpSFX)
         );
 
         var projectiles = [];
+        var enemyprojectiles = [];
+        var powerUps = [];
+        var enemies = [];
+
         var vector = function vector(x, y) {
           return new PIXI.Point(x, y);
         };
@@ -58512,17 +59428,30 @@ Negotiator._addProvider = function(provider) {
             _classCallCheck(this, Game);
 
             var score = new _score2.default();
+            var gameOver = new _gameOver2.default();
+            var testEnemyGroup = new _enemygroup2.default();
 
             this.app = app;
             this.assetManager = {};
+
             _event2.default.on(_events2.default.ADD_SCORE, function(_ref) {
               var point = _ref.point;
 
               score.addScore(point);
             });
-            _event2.default.on(_events2.default.EXPLOSION, function(_ref2) {
-              var x = _ref2.x,
-                y = _ref2.y;
+
+            _event2.default.on(_events2.default.ENTER_STAGE, function(_ref2) {
+              var sprite = _ref2.sprite;
+              return app.stage.addChild(sprite);
+            });
+            _event2.default.on(_events2.default.EXIT_STAGE, function(_ref3) {
+              var sprite = _ref3.sprite;
+              return app.stage.removeChild(sprite);
+            });
+
+            _event2.default.on(_events2.default.EXPLOSION, function(_ref4) {
+              var x = _ref4.x,
+                y = _ref4.y;
 
               var animatedsprite = _this.assetManager.explosion();
               animatedsprite.animationSpeed = 1 / 5;
@@ -58542,9 +59471,28 @@ Negotiator._addProvider = function(provider) {
               explosionSFX.fade(0.1, 0, 800, explosionSFX.play());
             });
 
-            _event2.default.on(_events2.default.PROJECTILE, function(_ref3) {
-              var x = _ref3.x,
-                y = _ref3.y;
+            _event2.default.on(_events2.default.ENEMY_DIE, function() {
+              enemyHurtSFX.fade(0.1, 0, 800, enemyHurtSFX.play());
+            });
+
+            _event2.default.on(_events2.default.POWER_UP, function(_ref5) {
+              var x = _ref5.x,
+                y = _ref5.y,
+                type = _ref5.type;
+
+              var p = new _powerUp2.default(
+                _this.assetManager.powerUp(),
+                type,
+                x,
+                y
+              );
+              app.stage.addChild(p.sprite);
+              powerUps.push(p);
+            });
+
+            _event2.default.on(_events2.default.PROJECTILE, function(_ref6) {
+              var x = _ref6.x,
+                y = _ref6.y;
 
               var p = new _projectile2.default(
                 _this.assetManager.currentProjectile(),
@@ -58560,9 +59508,30 @@ Negotiator._addProvider = function(provider) {
               projectiles.push(p);
             });
 
+            _event2.default.on(_events2.default.BOSS_PROJECTILE, function(
+              _ref7
+            ) {
+              var x = _ref7.x,
+                y = _ref7.y;
+
+              var p = new _projectile2.default(
+                _this.assetManager.bossProjectile(),
+                x,
+                y,
+                32,
+                32,
+                +20,
+                app.renderer.height
+              );
+              enemyprojectiles.push(p);
+              app.stage.addChild(p.sprite);
+              p.sprite.play();
+            });
+
             var initialize = function initialize() {
               var playerWidth = 128;
               var playerHeight = 128;
+              state.playerDMG = 30;
               state.boundaries = {
                 tl: {
                   x: playerWidth / 2,
@@ -58580,14 +59549,48 @@ Negotiator._addProvider = function(provider) {
                 .add("player", "assets/airplane5-dot.png")
                 .add("playerTiltLeft", "assets/airplane5-left-dot.png")
                 .add("playerTiltRight", "assets/airplane5-right-dot.png")
+                .add("bossProjectile", "assets/enemy-cross4.png")
                 .add("projectile", "assets/test.json")
                 .add("explosion", "assets/explosion.json")
+                .add("boss", "assets/enemy-rotate.json")
+                .add("enemy", "assets/enemy1.png")
+                .add("star", "assets/star-dot.png")
+                .add("star2", "assets/star-dot2.png")
+                .add("powered", "assets/airplane-power.json")
                 .load(function(loader, resources) {
+                  _this.assetManager.powerUp = function() {
+                    return new PIXI.extras.AnimatedSprite([
+                      resources.star.texture,
+                      resources.star2.texture
+                    ]);
+                  };
+
+                  _this.assetManager.enemy = function() {
+                    return new PIXI.extras.AnimatedSprite([
+                      resources.enemy.texture
+                    ]);
+                  };
+
                   _this.assetManager.currentProjectile = function() {
                     return new PIXI.extras.AnimatedSprite([
                       PIXI.Sprite.fromFrame("shot2-dot-blue.png").texture,
                       PIXI.Sprite.fromFrame("shot2-dot.png").texture
                     ]);
+                  };
+
+                  _this.assetManager.airplanePowered = function() {
+                    // TODO: memoize animation
+                    return new PIXI.extras.AnimatedSprite(
+                      [
+                        "airplane5-dot-1.png",
+                        "airplane5-dot-2.png",
+                        "airplane5-dot-3.png",
+                        "airplane5-dot-4.png",
+                        "airplane5-dot-5.png"
+                      ].map(function(file) {
+                        return PIXI.Sprite.fromFrame(file).texture;
+                      })
+                    );
                   };
 
                   _this.assetManager.explosion = function() {
@@ -58607,6 +59610,30 @@ Negotiator._addProvider = function(provider) {
                       })
                     );
                   };
+                  _this.assetManager.boss = function() {
+                    return new PIXI.extras.AnimatedSprite(
+                      [
+                        "enemy1-dot-1.png",
+                        "enemy1-dot-2.png",
+                        "enemy1-dot-3.png",
+                        "enemy1-dot-4.png",
+                        "enemy1-dot-5.png",
+                        "enemy1-dot-6.png",
+                        "enemy1-dot-7.png",
+                        "enemy1-dot-8.png",
+                        "enemy1-dot-9.png",
+                        "enemy1-dot-10.png",
+                        "enemy1-dot-11.png"
+                      ].map(function(file) {
+                        return PIXI.Sprite.fromFrame(file).texture;
+                      })
+                    );
+                  };
+                  _this.assetManager.bossProjectile = function() {
+                    return new PIXI.extras.AnimatedSprite([
+                      resources.bossProjectile.texture
+                    ]);
+                  };
 
                   var centerX = app.renderer.width / 2;
                   var centerY = app.renderer.height / 2;
@@ -58616,12 +59643,21 @@ Negotiator._addProvider = function(provider) {
                       resources.playerTiltLeft.texture,
                       resources.playerTiltRight.texture
                     ]),
+                    _this.assetManager.airplanePowered(),
                     state,
                     centerX,
                     centerY,
                     playerWidth,
                     playerHeight
                   );
+
+                  _event2.default.on(
+                    _events2.default.POWERUP_COLLECTED,
+                    function() {
+                      player.powerUp();
+                    }
+                  );
+
                   // This creates a texture from a 'fuji.png' image
                   var fuji = new PIXI.extras.TilingSprite(
                     resources.fuji.texture,
@@ -58639,6 +59675,29 @@ Negotiator._addProvider = function(provider) {
                   app.stage.addChild(player.sprite);
                   // Listen for frame updates
                   var isReady = false;
+
+                  // TEST BOSS
+                  var boss = new _boss2.default(
+                    _this.assetManager.boss(),
+                    state,
+                    400,
+                    400
+                  );
+                  app.stage.addChild(boss.sprite);
+                  boss.sprite.play();
+
+                  var enemy = new _enemy2.default(
+                    _this.assetManager.enemy(),
+                    state,
+                    playerWidth,
+                    playerHeight,
+                    playerWidth,
+                    playerHeight
+                  );
+                  testEnemyGroup.add(enemy);
+                  enemies.push(enemy);
+                  app.stage.addChild(enemy.sprite);
+
                   app.ticker.add(function() {
                     if (isReady) {
                       player.updatePosition();
@@ -58648,6 +59707,57 @@ Negotiator._addProvider = function(provider) {
                       projectiles = projectiles.filter(function(p) {
                         return !p.disabled;
                       });
+                      var check = void 0;
+
+                      enemies.forEach(function(enemy) {
+                        enemy.updatePosition(); // TODO: implement it...
+                        if (
+                          (check = (0, _collision2.default)(projectiles, enemy))
+                        ) {
+                          check.destroy();
+                          enemy.hitBy(state.playerDMG);
+                        }
+                      });
+                      enemies = enemies.filter(function(p) {
+                        return !p.disabled;
+                      });
+
+                      enemyprojectiles.forEach(function(p) {
+                        return p.updatePosition();
+                      });
+                      enemyprojectiles = enemyprojectiles.filter(function(p) {
+                        return !p.disabled;
+                      });
+                      if (
+                        (check = (0, _collision2.default)(
+                          enemyprojectiles,
+                          player
+                        ))
+                      ) {
+                        check.destroy();
+
+                        var isAlive = player.hit();
+                        if (!isAlive) {
+                          explosionSFX.play();
+                          gameOver.showGameOver();
+                        }
+                        //player.sprite.destroy();
+                      }
+
+                      powerUps.forEach(function(p) {
+                        return p.updatePosition();
+                      });
+                      powerUps = powerUps.filter(function(p) {
+                        return !p.disabled;
+                      });
+                      if (
+                        (check = (0, _collision2.default)(powerUps, player))
+                      ) {
+                        check.collected();
+                        powerUpSFX.play();
+                        // TODO: start power up effect.
+                      }
+
                       fuji.tilePosition.y -= 2;
                     }
                   });
@@ -58689,7 +59799,13 @@ Negotiator._addProvider = function(provider) {
         "./projectile": "src\\projectile.js",
         "./event": "src\\event.js",
         "./events": "src\\events.js",
-        "./score": "src\\score.js"
+        "./score": "src\\score.js",
+        "./gameOver": "src\\gameOver.js",
+        "./enemy": "src\\enemy.js",
+        "./boss": "src\\boss.js",
+        "./powerUp": "src\\powerUp.js",
+        "./enemygroup": "src\\enemygroup.js",
+        "./collision": "src\\collision.js"
       }
     ],
     "src\\index.js": [
@@ -58882,7 +59998,7 @@ Negotiator._addProvider = function(provider) {
           var hostname = "" || location.hostname;
           var protocol = location.protocol === "https:" ? "wss" : "ws";
           var ws = new WebSocket(
-            protocol + "://" + hostname + ":" + "62008" + "/"
+            protocol + "://" + hostname + ":" + "54471" + "/"
           );
           ws.onmessage = function(event) {
             var data = JSON.parse(event.data);
