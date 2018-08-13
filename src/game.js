@@ -53,6 +53,9 @@ export default class Game {
       score.addScore(point);
     });
 
+    Event.on(EVENTS.ENTER_STAGE, ({ sprite }) => app.stage.addChild(sprite));
+    Event.on(EVENTS.EXIT_STAGE, ({ sprite }) => app.stage.removeChild(sprite));
+
     Event.on(EVENTS.EXPLOSION, ({ x, y }) => {
       const animatedsprite = this.assetManager.explosion();
       animatedsprite.animationSpeed = 1 / 5;
@@ -140,6 +143,7 @@ export default class Game {
         .add("enemy", "assets/enemy1.png")
         .add("star", "assets/star-dot.png")
         .add("star2", "assets/star-dot2.png")
+        .add("powered", "assets/airplane-power.json")
         .load((loader, resources) => {
           this.assetManager.powerUp = () =>
             new PIXI.extras.AnimatedSprite([
@@ -155,6 +159,19 @@ export default class Game {
               PIXI.Sprite.fromFrame("shot2-dot-blue.png").texture,
               PIXI.Sprite.fromFrame("shot2-dot.png").texture
             ]);
+
+          this.assetManager.airplanePowered = () => {
+            // TODO: memoize animation
+            return new PIXI.extras.AnimatedSprite(
+              [
+                "airplane5-dot-1.png",
+                "airplane5-dot-2.png",
+                "airplane5-dot-3.png",
+                "airplane5-dot-4.png",
+                "airplane5-dot-5.png"
+              ].map(file => PIXI.Sprite.fromFrame(file).texture)
+            );
+          };
 
           this.assetManager.explosion = () => {
             // TODO: memoize animation
@@ -199,12 +216,18 @@ export default class Game {
               resources.playerTiltLeft.texture,
               resources.playerTiltRight.texture
             ]),
+            this.assetManager.airplanePowered(),
             state,
             centerX,
             centerY,
             playerWidth,
             playerHeight
           );
+
+          Event.on(EVENTS.POWERUP_COLLECTED, () => {
+            player.powerUp();
+          });
+
           // This creates a texture from a 'fuji.png' image
           var fuji = new PIXI.extras.TilingSprite(
             resources.fuji.texture,
@@ -260,9 +283,13 @@ export default class Game {
               enemyprojectiles = enemyprojectiles.filter(p => !p.disabled);
               if ((check = AABB(enemyprojectiles, player))) {
                 check.destroy();
-                player.sprite.destroy();
-                explosionSFX.play();
-                gameOver.showGameOver();
+
+                const isAlive = player.hit();
+                if (!isAlive) {
+                  explosionSFX.play();
+                  gameOver.showGameOver();
+                }
+                //player.sprite.destroy();
               }
 
               powerUps.forEach(p => p.updatePosition());
