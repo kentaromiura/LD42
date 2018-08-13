@@ -8,9 +8,14 @@ import GameOver from "./gameOver";
 import Enemy from "./enemy";
 import Boss from "./boss";
 import PowerUP from "./powerUp";
+import { BulgePinchFilter } from "@pixi/filter-bulge-pinch";
+
+import Transition from "./transition";
+import Equations from "./equations";
 
 import EnemyGroup from "./enemygroup";
 import AABB from "./collision";
+import { ESRCH } from "constants";
 
 const soundsBank = [];
 
@@ -144,7 +149,24 @@ export default class Game {
         .add("star", "assets/star-dot.png")
         .add("star2", "assets/star-dot2.png")
         .add("powered", "assets/airplane-power.json")
+        .add("singularity", "assets/singularity.png")
         .load((loader, resources) => {
+          this.assetManager.singularity = () => {
+            const res = new PIXI.Sprite(resources.singularity.texture);
+            new Transition(3000, Equations.bounce, delta => {
+              res.filters = [
+                new BulgePinchFilter(
+                  vector(0.5, 0.5),
+                  Math.max(res.height, res.width),
+                  delta
+                ),
+                new BulgePinchFilter(vector(delta, delta), res.height, -1),
+                new BulgePinchFilter(vector(1 - delta, delta), res.height, -1)
+              ];
+            }).loop();
+            return res;
+          };
+
           this.assetManager.powerUp = () =>
             new PIXI.extras.AnimatedSprite([
               resources.star.texture,
@@ -162,7 +184,7 @@ export default class Game {
 
           this.assetManager.airplanePowered = () => {
             // TODO: memoize animation
-            return new PIXI.extras.AnimatedSprite(
+            const res = new PIXI.extras.AnimatedSprite(
               [
                 "airplane5-dot-1.png",
                 "airplane5-dot-2.png",
@@ -171,6 +193,8 @@ export default class Game {
                 "airplane5-dot-5.png"
               ].map(file => PIXI.Sprite.fromFrame(file).texture)
             );
+
+            return res;
           };
 
           this.assetManager.explosion = () => {
@@ -262,6 +286,27 @@ export default class Game {
           testEnemyGroup.add(enemy);
           enemies.push(enemy);
           app.stage.addChild(enemy.sprite);
+
+          const blackHole = this.assetManager.singularity();
+          blackHole.x = 0;
+          blackHole.height = 64;
+          blackHole.y = app.renderer.height - blackHole.height;
+          blackHole.width = app.renderer.width;
+          state.boundaries.br.y -= 64;
+
+          app.stage.addChild(blackHole);
+
+          Event.on(EVENTS.INCREASE_BLACKHOLE, ({ amount }) => {
+            blackHole.height += amount;
+            blackHole.y = app.renderer.height - blackHole.height;
+            state.boundaries.br.y -= amount;
+            player.fixPosition(state.boundaries.br.y);
+          });
+
+          // TODO: use real logic.
+          setInterval(() => {
+            Event.fire(EVENTS.INCREASE_BLACKHOLE, { amount: 10 });
+          }, 500);
 
           app.ticker.add(() => {
             if (isReady) {
